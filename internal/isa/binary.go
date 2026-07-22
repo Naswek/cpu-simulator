@@ -2,8 +2,8 @@ package isa
 
 import (
 	"encoding/binary"
-	"log"
 	"os"
+	"fmt"
 )
 
 func ReadProgram(filename string) ([]uint32, error) {
@@ -11,6 +11,14 @@ func ReadProgram(filename string) ([]uint32, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if len(data)%4 != 0 {
+		return nil, fmt.Errorf(
+			"data size must be a multiple of 4 bytes: %d received",
+			len(data),
+		)
+	}
+	
 	return fromByteToUint32(data), nil
 }
 
@@ -18,7 +26,7 @@ func WriteProgram(filename string, data []uint32) error {
 	bytes := fromUint32ToByte(data)
 	err := os.WriteFile(filename, bytes, 0644)	
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	return nil
 }
@@ -41,7 +49,7 @@ func DecodeProgram(program []uint32) []Instruction {
 
 
 func EncodeInstruction(instr Instruction) uint32 {
-	return uint32(instr.Opcode)<<24 | uint32(instr.Operand & 0xFFFFFF)
+	return uint32(instr.Opcode & 0xFF)<<24 | uint32(instr.Operand & 0xFFFFFF)
 }
 
 func DecodeInstruction(instr uint32) Instruction {
@@ -54,8 +62,8 @@ func DecodeInstruction(instr uint32) Instruction {
 func fromUint32ToByte(data []uint32) []byte {
 	result := make([]byte, len(data)*4)
 
-	for i, number := range result {
-		binary.BigEndian.PutUint32(result[i*4:], uint32(number))
+	for i, word := range data {
+		binary.BigEndian.PutUint32(result[i*4:(i+1)*4], word)
 	}
 
 	return result

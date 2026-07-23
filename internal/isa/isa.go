@@ -8,21 +8,21 @@ const (
 )
 
 
-type IODevice uint8 
+type IODevice string 
 const (
-	DeviceInput IODevice = iota
-	DeviceOutput 
+	DeviceInput IODevice 	= "input"
+	DeviceOutput IODevice   = "output"
 )
 
 type IODeviceInfo struct {
-	Port 			uint8
+	Device 		 	IODevice
 	InterruptVector uint8
 }
 
 
-var IODeviceTable = map[IODevice]IODeviceInfo {
-	DeviceInput : {Port: 0, InterruptVector: 0},
-	DeviceOutput: {Port: 1, InterruptVector: 1},
+var PortsTable = map[uint8]IODeviceInfo {
+	0 : {Device: DeviceInput, InterruptVector: 0},
+	1 : {Device: DeviceOutput, InterruptVector: 1},
 }
 
 type Register uint32

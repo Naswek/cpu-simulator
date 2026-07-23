@@ -5,13 +5,25 @@ const (
 	MemSize  uint32 = 2048
 	DataStackSize uint32 = MemSize
 	ReturnStackSize uint32 = 1500
-	IOPortCount uint32 = 4 
-	PORT_IN = 0
-	PORT_OUT = 1
-	InterruptVectorInput = 0
-	InterruptVectorOutput = 1
 )
 
+
+type IODevice uint8 
+const (
+	DeviceInput IODevice = iota
+	DeviceOutput 
+)
+
+type IODeviceInfo struct {
+	Port 			uint8
+	InterruptVector uint8
+}
+
+
+var IODeviceTable = map[IODevice]IODeviceInfo {
+	DeviceInput : {Port: 0, InterruptVector: 0},
+	DeviceOutput: {Port: 1, InterruptVector: 1},
+}
 
 type Register uint32
 const (
@@ -58,7 +70,7 @@ const (
 	JMP = 0x10
 	JZ	= 0x11
 	JC  = 0x12
-	JNС = 0x13
+	JNC = 0x13
 	JP = 0x14
 	JN = 0x15
 	JNZ = 0x16
@@ -125,7 +137,7 @@ var OpcodeTable = map[Opcode]OpcodeInfo {
 	LD_SP_N : {"ld_sp_n", stack_offset, 1},
 	ST_ADDR : {"st_addr", addr, 1},
 	ST_IND  : {"st_ind", addr, 1},
-	ST_SP_N : {"st_sp_n",imm, 1},
+	ST_SP_N : {"st_sp_n", stack_offset, 1},
 
 	ADD : {"add", addr, 1},
 	SUB : {"sub", addr, 1},

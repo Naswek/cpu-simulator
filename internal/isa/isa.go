@@ -122,6 +122,7 @@ var OpcodeTable = map[Opcode]OpcodeInfo {
 	JZ   : {"jz", addr, 1},
 	JN 	 : {"jn", addr, 1},
 	JNZ	 : {"jnz", addr, 1},
+	JNC	 : {"jnc", addr, 1},
 	CALL : {"call", addr, 1},
 	JP	 : {"jp", addr, 1},
 	JC	 : {"jc", addr, 1},

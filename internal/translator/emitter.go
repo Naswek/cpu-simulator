@@ -80,5 +80,9 @@ func (t *Translator) emitKey() {
 }
 
 func (t *Translator) emitEmit() {
-	
+	t.emitDrop()
+	t.code = append(t.code, isa.Instruction{
+		Opcode: isa.OUT,
+		Operand: 1,
+	})
 }

@@ -5,6 +5,8 @@ const (
 	MemSize  uint32 = 2048
 	DataStackSize uint32 = MemSize
 	ReturnStackSize uint32 = 1500
+	PortInput uint8 = 0
+	PortOutput uint8 = 1
 )
 
 

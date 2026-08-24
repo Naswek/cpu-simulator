@@ -41,12 +41,12 @@ func (t *Translator) emitDrop() {
 	t.emitNoArg(isa.POP)
 }
 
-func (t *Translator) emitKey(port uint8) {
-	t.emit(isa.IN, isa.Operand(port))
+func (t *Translator) emitKey() {
+	t.emit(isa.IN, isa.Operand(isa.PortInput))
 	t.emitNoArg(isa.PUSH)
 }
 
-func (t *Translator) emitEmit(port uint8) {
+func (t *Translator) emitEmit() {
 	t.emitDrop()
-	t.emit(isa.OUT, isa.Operand(port))
+	t.emit(isa.OUT, isa.Operand(isa.PortOutput))
 }

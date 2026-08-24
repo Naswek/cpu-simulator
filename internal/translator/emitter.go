@@ -16,73 +16,37 @@ func (t *Translator) emit(opcode isa.Opcode, operand isa.Operand) {
 	})
 }
 func (t *Translator) emitNoArg(opcode isa.Opcode) {
-	t.code = append(t.code, isa.Instruction {
-		Opcode: opcode,
-		Operand: 0,
-	})
+	t.emit(opcode, 0)
 }
 
 func (t *Translator) emitPushImm(value int) {
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.LD_IMM,
-		Operand: isa.Operand(value),
-	})
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.PUSH,
-		Operand: 0,
-	})
+	t.emit(isa.LD_IMM, isa.Operand(value))
+	t.emitNoArg(isa.PUSH)
 }
 
 func (t *Translator) emitBinaryOp(opcode isa.Opcode) {
 	t.emitDrop()
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.ST_ADDR,
-		Operand: t.tmpAddr,
-	})
+	t.emit(isa.ST_ADDR, t.tmpAddr)
 	t.emitDrop()
-	t.code = append(t.code, isa.Instruction{
-		Opcode: opcode,
-		Operand: t.tmpAddr,
-	})
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.PUSH,
-		Operand: 0,
-	})
+	t.emit(opcode, t.tmpAddr)
+	t.emitNoArg(isa.PUSH)
 }
 
 func (t *Translator) emitDup() {
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.LD_SP_N,
-		Operand: 0,
-	})
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.PUSH,
-		Operand: 0,
-	})
+	t.emit(isa.LD_SP_N, 0)
+	t.emitNoArg(isa.PUSH)
 }
 
 func (t *Translator) emitDrop() {
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.POP,
-		Operand: 0,
-	})
+	t.emitNoArg(isa.POP)
 }
 
-func (t *Translator) emitKey() {
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.IN,
-		Operand: 0,
-	})
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.PUSH,
-		Operand: 0,
-	})
+func (t *Translator) emitKey(port uint8) {
+	t.emit(isa.IN, isa.Operand(port))
+	t.emitNoArg(isa.PUSH)
 }
 
-func (t *Translator) emitEmit() {
+func (t *Translator) emitEmit(port uint8) {
 	t.emitDrop()
-	t.code = append(t.code, isa.Instruction{
-		Opcode: isa.OUT,
-		Operand: 1,
-	})
+	t.emit(isa.OUT, isa.Operand(port))
 }

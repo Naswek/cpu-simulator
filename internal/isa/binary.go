@@ -2,8 +2,8 @@ package isa
 
 import (
 	"encoding/binary"
-	"os"
 	"fmt"
+	"os"
 )
 
 func ReadProgram(filename string) ([]uint32, error) {
@@ -18,13 +18,13 @@ func ReadProgram(filename string) ([]uint32, error) {
 			len(data),
 		)
 	}
-	
+
 	return fromByteToUint32(data), nil
 }
 
 func WriteProgram(filename string, data []uint32) error {
 	bytes := fromUint32ToByte(data)
-	err := os.WriteFile(filename, bytes, 0644)	
+	err := os.WriteFile(filename, bytes, 0644)
 	if err != nil {
 		return err
 	}
@@ -47,9 +47,8 @@ func DecodeProgram(program []uint32) []Instruction {
 	return instrs
 }
 
-
 func EncodeInstruction(instr Instruction) uint32 {
-	return uint32(instr.Opcode & 0xFF)<<24 | uint32(instr.Operand & 0xFFFFFF)
+	return uint32(instr.Opcode&0xFF)<<24 | uint32(instr.Operand&0xFFFFFF)
 }
 
 func DecodeInstruction(instr uint32) Instruction {
@@ -72,7 +71,7 @@ func fromUint32ToByte(data []uint32) []byte {
 func fromByteToUint32(data []byte) []uint32 {
 	result := make([]uint32, len(data)/4)
 
-	for i:= range result {
+	for i := range result {
 		result[i] = binary.BigEndian.Uint32(data[i*4 : (i+1)*4])
 	}
 

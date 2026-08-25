@@ -58,4 +58,12 @@ var builtins = map[string]BuiltinEmitter{
 		t.emitNoArg(isa.IRET)
 		return nil
 	},
+	"@": func(t *Translator) error {
+		t.emitFetch()
+		return nil
+	},
+	"!": func(t *Translator) error {
+		t.emitStore()
+		return nil
+	},
 }

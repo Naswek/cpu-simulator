@@ -5,10 +5,10 @@ import (
 )
 
 type Translator struct {
-	code    []isa.Instruction
-	tmpAddr isa.Operand
+	code         []isa.Instruction
+	tmpAddr      isa.Operand
 	tmpValueAddr isa.Operand
-	variables map[string]isa.Operand
+	variables    map[string]isa.Operand
 	nextDataAddr isa.Operand
 }
 
@@ -52,4 +52,18 @@ func (t *Translator) emitKey() {
 func (t *Translator) emitEmit() {
 	t.emitDrop()
 	t.emit(isa.OUT, isa.Operand(isa.PortOutput))
+}
+
+func (t *Translator) emitFetch() {
+	t.emitDrop()
+	t.emit(isa.ST_ADDR, t.tmpAddr)
+	t.emit(isa.LD_IND, t.tmpAddr)
+	t.emitNoArg(isa.PUSH)
+}
+
+func (t *Translator) emitStore() {
+	t.emitDrop()
+	t.emit(isa.ST_ADDR, t.tmpAddr)
+	t.emitDrop()
+	t.emit(isa.ST_IND, t.tmpAddr)
 }

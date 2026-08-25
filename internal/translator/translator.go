@@ -37,7 +37,7 @@ func Translate(source string) ([]isa.Instruction, error) {
 				return nil, errors.New("syntax error: variable definitions cannot be without variable name, variable cannot be number")
 			}
 			name := tokens[i+1]
-			if _, builtinsHas := builtins[name.Text]; builtinsHas || name.Text != "variable" {
+			if _, builtinsHas := builtins[name.Text]; builtinsHas || name.Text == "variable" {
 				return nil, errors.New("variable cannot have name like function words")
 			}
 			err = translator.defineVariable(name.Text)

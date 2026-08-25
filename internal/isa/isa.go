@@ -136,7 +136,7 @@ var OpcodeTable = map[Opcode]OpcodeInfo{
 
 	LD_IMM:  {"ld_imm", imm, 1},
 	LD_ADDR: {"ld_addr", addr, 1},
-	LD_IND:  {"ld_ind", none, 1},
+	LD_IND:  {"ld_ind", addr, 1},
 	LD_SP_N: {"ld_sp_n", stack_offset, 1},
 	ST_ADDR: {"st_addr", addr, 1},
 	ST_IND:  {"st_ind", addr, 1},

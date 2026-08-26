@@ -27,9 +27,9 @@ func DisassembleInstruction(instr Instruction) string {
 		if !ok {
 			return fmt.Sprintf("%v port %v", info.Mnemonic, instr.Operand)
 		}
-		return fmt.Sprintf("%v %s ; %v", info.Mnemonic, instr.Operand, deviceInfo.Device)
+		return fmt.Sprintf("%v %v ; %v", info.Mnemonic, instr.Operand, deviceInfo.Device)
 	default:
-		return fmt.Sprintf("Unknown opcode: %s, operand: %v", instr.Opcode, instr.Operand)
+		return fmt.Sprintf("Unknown opcode: %v, operand: %v", instr.Opcode, instr.Operand)
 	}
 }
 

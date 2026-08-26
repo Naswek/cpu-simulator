@@ -14,6 +14,7 @@ type ControlKind uint8
 
 const (
 	If ControlKind = iota
+	Else
 )
 
 func (t *Translator) currentAddr() uint32 {

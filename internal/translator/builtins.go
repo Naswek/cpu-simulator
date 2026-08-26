@@ -27,6 +27,38 @@ var builtins = map[string]BuiltinEmitter{
 		t.emitBinaryOp(isa.MOD)
 		return nil
 	},
+	"=": func(t *Translator) error {
+		t.emitCompareOp(isa.JZ)
+		return nil
+	},
+	"<": func(t *Translator) error {
+		t.emitCompareOp(isa.JN)
+		return nil
+	},
+	">": func(t *Translator) error {
+		t.emitCompareOp(isa.JP)
+		return nil
+	},
+	"0=": func(t *Translator) error {
+		t.emitZeroCompare(isa.JZ)
+		return nil
+	},
+	"not": func(t *Translator) error {
+		t.emitZeroCompare(isa.JZ)
+		return nil
+	},
+	"1+": func(t *Translator) error {
+		t.emitInc()
+		return nil
+	},
+	"cell+": func(t *Translator) error {
+		t.emitCellInc()
+		return nil
+	},
+	"char+": func(t *Translator) error {
+		t.emitCellInc()
+		return nil
+	},
 
 	"dup": func(t *Translator) error {
 		t.emitDup()
@@ -38,6 +70,10 @@ var builtins = map[string]BuiltinEmitter{
 	},
 
 	"emit": func(t *Translator) error {
+		t.emitEmit()
+		return nil
+	},
+	".": func(t *Translator) error {
 		t.emitEmit()
 		return nil
 	},

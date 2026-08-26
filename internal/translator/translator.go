@@ -6,13 +6,6 @@ import (
 	"fmt"
 )
 
-const (
-	startTmpAddr      = 0x400
-	startTmpValueAddr = 0x404
-	zeroAddr          = 0x408
-	startNextDataAddr = 0x40C
-)
-
 var specialWords = map[string]struct{}{
 	"variable": {},
 	":":        {},
@@ -74,16 +67,21 @@ func newTranslator() *Translator {
 	code := []isa.Instruction{
 		{Opcode: isa.JMP, Operand: 0},
 	}
+
+	zeroAddr := isa.Operand(isa.MemSize - isa.WordSize)
+	tmpValueAddr := isa.Operand(isa.MemSize - 2*isa.WordSize)
+	tmpAddr := isa.Operand(isa.MemSize - 3*isa.WordSize)
+
 	data := map[isa.Operand]int32{
-		startTmpAddr:      0,
-		startTmpValueAddr: 0,
-		zeroAddr:          0,
+		tmpAddr:      0,
+		tmpValueAddr: 0,
+		zeroAddr:     0,
 	}
 	return &Translator{
 		code:           code,
-		tmpAddr:        startTmpAddr,
-		tmpValueAddr:   startTmpValueAddr,
-		nextDataAddr:   startNextDataAddr,
+		tmpAddr:        tmpAddr,
+		tmpValueAddr:   tmpValueAddr,
+		nextDataAddr:   tmpAddr,
 		zeroAddr:       zeroAddr,
 		variables:      make(map[string]isa.Operand),
 		data:           data,

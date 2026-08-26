@@ -67,32 +67,54 @@ func (t *Translator) resolveCalls() error {
 }
 
 func (t *Translator) defineString(value string) (isa.Operand, error) {
-	startAddr := t.nextDataAddr
-
-	for _, ch := range []byte(value) {
-		if _, err := t.allocateDataCell(int32(ch)); err != nil {
-			return 0, err
-		}
-	}
-
-	if _, err := t.allocateDataCell(0); err != nil {
+	bytes := []byte(value)
+	startAddr, err := t.allocateDataBlock(len(bytes) + 1)
+	if err != nil {
 		return 0, err
 	}
+
+	for i, ch := range bytes {
+		addr := startAddr + isa.Operand(i)*isa.Operand(isa.WordSize)
+		t.data[addr] = int32(ch)
+	}
+
+	terminatorAddr := startAddr + isa.Operand(len(bytes))*isa.Operand(isa.WordSize)
+	t.data[terminatorAddr] = 0
 
 	return startAddr, nil
 }
 
 func (t *Translator) allocateDataCell(value int32) (isa.Operand, error) {
-	addr := t.nextDataAddr
-	if uint32(addr) >= isa.MemSize {
-		return 0, fmt.Errorf("data memory overflow at address 0x%06X", addr)
-	}
-
-	if _, ok := t.data[addr]; ok {
-		return 0, fmt.Errorf("data address 0x%06X is already used", addr)
+	addr, err := t.allocateDataBlock(1)
+	if err != nil {
+		return 0, err
 	}
 
 	t.data[addr] = value
-	t.nextDataAddr += isa.Operand(isa.WordSize)
 	return addr, nil
+}
+
+func (t *Translator) allocateDataBlock(cells int) (isa.Operand, error) {
+	if cells <= 0 {
+		return t.nextDataAddr, nil
+	}
+
+	size := isa.Operand(cells) * isa.Operand(isa.WordSize)
+	if t.nextDataAddr < size {
+		return 0, fmt.Errorf("data memory overflow: cannot allocate %d cells", cells)
+	}
+
+	startAddr := t.nextDataAddr - size
+	for i := 0; i < cells; i++ {
+		addr := startAddr + isa.Operand(i)*isa.Operand(isa.WordSize)
+		if uint32(addr) >= isa.MemSize {
+			return 0, fmt.Errorf("data address 0x%06X is outside memory", addr)
+		}
+		if _, ok := t.data[addr]; ok {
+			return 0, fmt.Errorf("data address 0x%06X is already used", addr)
+		}
+	}
+
+	t.nextDataAddr = startAddr
+	return startAddr, nil
 }

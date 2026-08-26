@@ -66,6 +66,50 @@ func (t *Translator) emitBinaryOp(opcode isa.Opcode) {
 	t.emitNoArg(isa.PUSH)
 }
 
+func (t *Translator) emitCompareOp(jumpIfTrue isa.Opcode) {
+	t.emitDrop()
+	t.emit(isa.ST_ADDR, t.tmpAddr)
+	t.emitDrop()
+	t.emit(isa.CMP, t.tmpAddr)
+	t.emitBoolFromJump(jumpIfTrue)
+}
+
+func (t *Translator) emitZeroCompare(jumpIfTrue isa.Opcode) {
+	t.emitDrop()
+	t.emit(isa.CMP, t.zeroAddr)
+	t.emitBoolFromJump(jumpIfTrue)
+}
+
+func (t *Translator) emitBoolFromJump(jumpIfTrue isa.Opcode) {
+	trueJumpIndex := len(t.code)
+	t.emit(jumpIfTrue, 0)
+
+	t.emitPushImm(0)
+	endJumpIndex := len(t.code)
+	t.emit(isa.JMP, 0)
+
+	trueAddr := t.currentAddr()
+	t.patchOperand(trueJumpIndex, trueAddr)
+	t.emitPushImm(1)
+
+	endAddr := t.currentAddr()
+	t.patchOperand(endJumpIndex, endAddr)
+}
+
+func (t *Translator) emitInc() {
+	t.emitDrop()
+	t.emitNoArg(isa.INC)
+	t.emitNoArg(isa.PUSH)
+}
+
+func (t *Translator) emitCellInc() {
+	t.emitDrop()
+	for i := uint32(0); i < isa.WordSize; i++ {
+		t.emitNoArg(isa.INC)
+	}
+	t.emitNoArg(isa.PUSH)
+}
+
 func (t *Translator) emitDup() {
 	t.emit(isa.LD_SP_N, 0)
 	t.emitNoArg(isa.PUSH)

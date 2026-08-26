@@ -72,6 +72,19 @@ func Translate(source string) ([]isa.Instruction, error) {
 			continue
 		}
 
+		if isWord && t.Text == "begin" {
+			translator.emitBegin()
+			continue
+		}
+
+		if isWord && t.Text == "until" {
+			err = translator.emitUntil()
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
 		err := sortToken(t, translator)
 		if err != nil {
 			return nil, err

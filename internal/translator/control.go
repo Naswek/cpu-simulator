@@ -7,7 +7,7 @@ import (
 type ControlFrame struct {
 	kind      ControlKind
 	jumpIndex int
-	startAddr isa.Operand
+	startAddr uint32
 }
 
 type ControlKind uint8
@@ -15,6 +15,7 @@ type ControlKind uint8
 const (
 	If ControlKind = iota
 	Else
+	Begin
 )
 
 func (t *Translator) currentAddr() uint32 {

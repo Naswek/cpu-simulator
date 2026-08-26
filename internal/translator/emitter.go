@@ -121,3 +121,29 @@ func (t *Translator) emitElse() error {
 	}
 	return nil
 }
+
+func (t *Translator) emitBegin() {
+	startAddr := t.currentAddr()
+	t.controlStack = append(t.controlStack, ControlFrame{
+		kind:      Begin,
+		startAddr: startAddr,
+	})
+}
+
+func (t *Translator) emitUntil() error {
+	if len(t.controlStack) == 0 {
+		return errors.New("until without matching begin")
+	}
+
+	frame := t.controlStack[len(t.controlStack)-1]
+	if frame.kind != Begin {
+		return errors.New("until closes wrong frame")
+	}
+
+	t.controlStack = t.controlStack[:len(t.controlStack)-1]
+
+	t.emitDrop()
+	t.emit(isa.CMP, t.zeroAddr)
+	t.emit(isa.JZ, isa.Operand(frame.startAddr))
+	return nil
+}

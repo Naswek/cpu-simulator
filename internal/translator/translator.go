@@ -21,8 +21,27 @@ var specialWords = map[string]struct{}{
 }
 
 type Program struct {
-	Code []isa.Instruction
-	Data map[isa.Operand]int32
+	Code             []isa.Instruction
+	Data             map[isa.Operand]int32
+	InterruptVectors map[uint8]isa.Operand
+}
+
+func (p Program) CodeWords() ([]uint32, error) {
+	words := isa.EncodeProgram(p.Code)
+
+	for vector, addr := range p.InterruptVectors {
+		if vector >= isa.InterruptVectors {
+			return nil, fmt.Errorf("interrupt vector %d is outside vector table", vector)
+		}
+
+		index := int(isa.InterruptVectorAddress(vector) / isa.Operand(isa.WordSize))
+		if index >= len(words) {
+			return nil, fmt.Errorf("interrupt vector %d is outside code image", vector)
+		}
+		words[index] = uint32(addr)
+	}
+
+	return words, nil
 }
 
 func (p Program) MemoryImage() ([]uint32, error) {
@@ -52,9 +71,14 @@ func (p Program) MemoryImage() ([]uint32, error) {
 		}
 	}
 
+	code, err := p.CodeWords()
+	if err != nil {
+		return nil, err
+	}
+
 	image := make([]uint32, maxLen)
-	for i, instr := range p.Code {
-		image[i] = isa.EncodeInstruction(instr)
+	for i, word := range code {
+		image[i] = word
 	}
 	for addr, value := range p.Data {
 		image[int(addr/isa.Operand(isa.WordSize))] = uint32(value)
@@ -64,9 +88,8 @@ func (p Program) MemoryImage() ([]uint32, error) {
 }
 
 func newTranslator() *Translator {
-	code := []isa.Instruction{
-		{Opcode: isa.JMP, Operand: 0},
-	}
+	code := make([]isa.Instruction, 1+isa.InterruptVectors)
+	code[0] = isa.Instruction{Opcode: isa.JMP, Operand: 0}
 
 	zeroAddr := isa.Operand(isa.MemSize - isa.WordSize)
 	tmpValueAddr := isa.Operand(isa.MemSize - 2*isa.WordSize)
@@ -78,15 +101,16 @@ func newTranslator() *Translator {
 		zeroAddr:     0,
 	}
 	return &Translator{
-		code:           code,
-		tmpAddr:        tmpAddr,
-		tmpValueAddr:   tmpValueAddr,
-		nextDataAddr:   tmpAddr,
-		zeroAddr:       zeroAddr,
-		variables:      make(map[string]isa.Operand),
-		data:           data,
-		words:          make(map[string]isa.Operand),
-		entryJumpIndex: 0,
+		code:             code,
+		tmpAddr:          tmpAddr,
+		tmpValueAddr:     tmpValueAddr,
+		nextDataAddr:     tmpAddr,
+		zeroAddr:         zeroAddr,
+		variables:        make(map[string]isa.Operand),
+		data:             data,
+		words:            make(map[string]isa.Operand),
+		interruptVectors: make(map[uint8]isa.Operand),
+		entryJumpIndex:   0,
 	}
 }
 
@@ -271,12 +295,14 @@ func Translate(source string) (Program, error) {
 		return Program{}, err
 	}
 
+	translator.resolveInterruptVectors()
 	translator.startMain()
 	translator.emitNoArg(isa.HALT)
 
 	return Program{
-		Code: translator.code,
-		Data: translator.data,
+		Code:             translator.code,
+		Data:             translator.data,
+		InterruptVectors: translator.interruptVectors,
 	}, nil
 }
 

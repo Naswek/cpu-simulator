@@ -6,19 +6,20 @@ import (
 )
 
 type Translator struct {
-	code            []isa.Instruction
-	tmpAddr         isa.Operand
-	tmpValueAddr    isa.Operand
-	zeroAddr        isa.Operand
-	variables       map[string]isa.Operand
-	nextDataAddr    isa.Operand
-	controlStack    []ControlFrame
-	data            map[isa.Operand]int32
-	words           map[string]isa.Operand
-	unresolvedCalls []CallPatch
-	insideWord      bool
-	mainStarted     bool
-	entryJumpIndex  int
+	code             []isa.Instruction
+	tmpAddr          isa.Operand
+	tmpValueAddr     isa.Operand
+	zeroAddr         isa.Operand
+	variables        map[string]isa.Operand
+	nextDataAddr     isa.Operand
+	controlStack     []ControlFrame
+	data             map[isa.Operand]int32
+	words            map[string]isa.Operand
+	interruptVectors map[uint8]isa.Operand
+	unresolvedCalls  []CallPatch
+	insideWord       bool
+	mainStarted      bool
+	entryJumpIndex   int
 }
 
 type CallPatch struct {

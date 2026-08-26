@@ -66,6 +66,16 @@ func (t *Translator) resolveCalls() error {
 	return nil
 }
 
+func (t *Translator) resolveInterruptVectors() {
+	addr, ok := t.lookupWord("handle_input")
+	if !ok {
+		return
+	}
+
+	deviceInfo := isa.PortsTable[isa.PortInput]
+	t.interruptVectors[deviceInfo.InterruptVector] = addr
+}
+
 func (t *Translator) defineString(value string) (isa.Operand, error) {
 	bytes := []byte(value)
 	startAddr, err := t.allocateDataBlock(len(bytes) + 1)

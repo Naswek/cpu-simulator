@@ -32,6 +32,44 @@ type Program struct {
 	Data map[isa.Operand]int32
 }
 
+func (p Program) MemoryImage() ([]uint32, error) {
+	maxLen := len(p.Code)
+
+	for addr := range p.Data {
+		if addr%isa.Operand(isa.WordSize) != 0 {
+			return nil, fmt.Errorf("unaligned data address 0x%06X", addr)
+		}
+		if uint32(addr) >= isa.MemSize {
+			return nil, fmt.Errorf("data address 0x%06X is outside memory", addr)
+		}
+
+		index := int(addr / isa.Operand(isa.WordSize))
+		if index < len(p.Code) {
+			return nil, fmt.Errorf("data address 0x%06X overlaps code", addr)
+		}
+		if index+1 > maxLen {
+			maxLen = index + 1
+		}
+	}
+
+	for i := range p.Code {
+		addr := uint32(i) * isa.WordSize
+		if addr >= isa.MemSize {
+			return nil, fmt.Errorf("code address 0x%06X is outside memory", addr)
+		}
+	}
+
+	image := make([]uint32, maxLen)
+	for i, instr := range p.Code {
+		image[i] = isa.EncodeInstruction(instr)
+	}
+	for addr, value := range p.Data {
+		image[int(addr/isa.Operand(isa.WordSize))] = uint32(value)
+	}
+
+	return image, nil
+}
+
 func newTranslator() *Translator {
 	code := []isa.Instruction{
 		{Opcode: isa.JMP, Operand: 0},
@@ -250,7 +288,12 @@ func sortToken(tkn Token, trlr *Translator) error {
 		trlr.emitPushImm(tkn.Value)
 		return nil
 	case TokenString:
-		return errors.New("strings are not implemented")
+		addr, err := trlr.defineString(tkn.Text)
+		if err != nil {
+			return err
+		}
+		trlr.emitPushImm(int32(addr))
+		return nil
 	case TokenWord:
 		if builtin, ok := builtins[tkn.Text]; ok {
 			return builtin(trlr)

@@ -14,10 +14,12 @@ func (t *Translator) defineVariable(name string) error {
 		return fmt.Errorf("variable %s conflicts with word", name)
 	}
 
-	addr := t.nextDataAddr
+	addr, err := t.allocateDataCell(0)
+	if err != nil {
+		return err
+	}
+
 	t.variables[name] = addr
-	t.data[addr] = 0
-	t.nextDataAddr += isa.Operand(isa.WordSize)
 	return nil
 }
 
@@ -62,4 +64,35 @@ func (t *Translator) resolveCalls() error {
 	}
 
 	return nil
+}
+
+func (t *Translator) defineString(value string) (isa.Operand, error) {
+	startAddr := t.nextDataAddr
+
+	for _, ch := range []byte(value) {
+		if _, err := t.allocateDataCell(int32(ch)); err != nil {
+			return 0, err
+		}
+	}
+
+	if _, err := t.allocateDataCell(0); err != nil {
+		return 0, err
+	}
+
+	return startAddr, nil
+}
+
+func (t *Translator) allocateDataCell(value int32) (isa.Operand, error) {
+	addr := t.nextDataAddr
+	if uint32(addr) >= isa.MemSize {
+		return 0, fmt.Errorf("data memory overflow at address 0x%06X", addr)
+	}
+
+	if _, ok := t.data[addr]; ok {
+		return 0, fmt.Errorf("data address 0x%06X is already used", addr)
+	}
+
+	t.data[addr] = value
+	t.nextDataAddr += isa.Operand(isa.WordSize)
+	return addr, nil
 }

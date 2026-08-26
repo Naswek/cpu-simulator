@@ -13,6 +13,7 @@ type Translator struct {
 	variables    map[string]isa.Operand
 	nextDataAddr isa.Operand
 	controlStack []ControlFrame
+	data         map[isa.Operand]int32
 }
 
 func (t *Translator) emit(opcode isa.Opcode, operand isa.Operand) {

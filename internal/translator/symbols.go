@@ -8,6 +8,9 @@ import (
 func (t *Translator) defineVariable(name string) error {
 	if _, ok := t.lookupVariable(name); !ok {
 		t.variables[name] = t.nextDataAddr
+		addr := t.nextDataAddr
+		t.variables[name] = addr
+		t.data[addr] = 0
 		t.nextDataAddr += isa.Operand(isa.WordSize)
 		return nil
 	} else {

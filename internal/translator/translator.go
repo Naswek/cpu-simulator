@@ -13,7 +13,17 @@ const (
 	startNextDataAddr = 0x40C
 )
 
+type Program struct {
+	Code []isa.Instruction
+	Data map[isa.Operand]int32
+}
+
 func newTranslator() *Translator {
+	data := map[isa.Operand]int32{
+		startTmpAddr:      0,
+		startTmpValueAddr: 0,
+		zeroAddr:          0,
+	}
 	return &Translator{
 		code:         make([]isa.Instruction, 0),
 		tmpAddr:      startTmpAddr,
@@ -21,15 +31,16 @@ func newTranslator() *Translator {
 		nextDataAddr: startNextDataAddr,
 		zeroAddr:     zeroAddr,
 		variables:    make(map[string]isa.Operand),
+		data:         data,
 	}
 }
 
-func Translate(source string) ([]isa.Instruction, error) {
+func Translate(source string) (Program, error) {
 	translator := newTranslator()
 
 	tokens, err := tokenize(source)
 	if err != nil {
-		return nil, err
+		return Program{}, err
 	}
 
 	for i := 0; i < len(tokens); i++ {
@@ -37,15 +48,15 @@ func Translate(source string) ([]isa.Instruction, error) {
 		isWord := t.Kind == TokenWord
 		if isWord && t.Text == "variable" {
 			if i+1 >= len(tokens) || tokens[i+1].Kind != TokenWord {
-				return nil, errors.New("syntax error: variable definitions cannot be without variable name, variable cannot be number")
+				return Program{}, errors.New("syntax error: variable definitions cannot be without variable name, variable cannot be number")
 			}
 			name := tokens[i+1]
 			if _, builtinsHas := builtins[name.Text]; builtinsHas || name.Text == "variable" {
-				return nil, errors.New("variable cannot have name like function words")
+				return Program{}, errors.New("variable cannot have name like function words")
 			}
 			err = translator.defineVariable(name.Text)
 			if err != nil {
-				return nil, fmt.Errorf("cannot define variable %q: %w", name.Text, err)
+				return Program{}, fmt.Errorf("cannot define variable %q: %w", name.Text, err)
 			}
 			i++
 			continue
@@ -59,7 +70,7 @@ func Translate(source string) ([]isa.Instruction, error) {
 		if isWord && t.Text == "then" {
 			err = translator.emitThen()
 			if err != nil {
-				return nil, err
+				return Program{}, err
 			}
 			continue
 		}
@@ -67,7 +78,7 @@ func Translate(source string) ([]isa.Instruction, error) {
 		if isWord && t.Text == "else" {
 			err = translator.emitElse()
 			if err != nil {
-				return nil, err
+				return Program{}, err
 			}
 			continue
 		}
@@ -80,7 +91,7 @@ func Translate(source string) ([]isa.Instruction, error) {
 		if isWord && t.Text == "until" {
 			err = translator.emitUntil()
 			if err != nil {
-				return nil, err
+				return Program{}, err
 			}
 			continue
 		}
@@ -88,7 +99,7 @@ func Translate(source string) ([]isa.Instruction, error) {
 		if isWord && t.Text == "again" {
 			err = translator.emitAgain()
 			if err != nil {
-				return nil, err
+				return Program{}, err
 			}
 			continue
 		}
@@ -96,7 +107,7 @@ func Translate(source string) ([]isa.Instruction, error) {
 		if isWord && t.Text == "while" {
 			err = translator.emitWhile()
 			if err != nil {
-				return nil, err
+				return Program{}, err
 			}
 			continue
 		}
@@ -104,22 +115,25 @@ func Translate(source string) ([]isa.Instruction, error) {
 		if isWord && t.Text == "repeat" {
 			err = translator.emitRepeat()
 			if err != nil {
-				return nil, err
+				return Program{}, err
 			}
 			continue
 		}
 
 		err := sortToken(t, translator)
 		if err != nil {
-			return nil, err
+			return Program{}, err
 		}
 	}
 
 	if len(translator.controlStack) != 0 {
-		return nil, errors.New("unclosed control frame")
+		return Program{}, errors.New("unclosed control frame")
 	}
 
-	return translator.code, nil
+	return Program{
+		Code: translator.code,
+		Data: translator.data,
+	}, nil
 }
 
 func sortToken(tkn Token, trlr *Translator) error {

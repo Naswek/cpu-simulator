@@ -7,9 +7,10 @@ import (
 )
 
 const (
-	startTmpAddr = 0x400
+	startTmpAddr      = 0x400
 	startTmpValueAddr = 0x404
-	startNextDataAddr = 0x408
+	zeroAddr          = 0x408
+	startNextDataAddr = 0x40C
 )
 
 func newTranslator() *Translator {
@@ -18,6 +19,7 @@ func newTranslator() *Translator {
 		tmpAddr:      startTmpAddr,
 		tmpValueAddr: startTmpValueAddr,
 		nextDataAddr: startNextDataAddr,
+		zeroAddr:     zeroAddr,
 		variables:    make(map[string]isa.Operand),
 	}
 }
@@ -32,7 +34,8 @@ func Translate(source string) ([]isa.Instruction, error) {
 
 	for i := 0; i < len(tokens); i++ {
 		t := tokens[i]
-		if t.Kind == TokenWord && t.Text == "variable" {
+		isWord := t.Kind == TokenWord
+		if isWord && t.Text == "variable" {
 			if i+1 >= len(tokens) || tokens[i+1].Kind != TokenWord {
 				return nil, errors.New("syntax error: variable definitions cannot be without variable name, variable cannot be number")
 			}
@@ -46,13 +49,31 @@ func Translate(source string) ([]isa.Instruction, error) {
 			}
 			i++
 			continue
-		} else {
-			err := sortToken(t, translator)
+		}
+
+		if isWord && t.Text == "if" {
+			translator.emitIf()
+			continue
+		}
+
+		if isWord && t.Text == "then" {
+			err = translator.emitThen()
 			if err != nil {
 				return nil, err
 			}
+			continue
+		}
+
+		err := sortToken(t, translator)
+		if err != nil {
+			return nil, err
 		}
 	}
+
+	if len(translator.controlStack) != 0 {
+		return nil, errors.New("unclodes control frame")
+	}
+
 	return translator.code, nil
 }
 

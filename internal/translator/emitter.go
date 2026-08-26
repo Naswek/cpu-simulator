@@ -2,14 +2,17 @@ package translator
 
 import (
 	"cpu-simulator/internal/isa"
+	"errors"
 )
 
 type Translator struct {
 	code         []isa.Instruction
 	tmpAddr      isa.Operand
 	tmpValueAddr isa.Operand
+	zeroAddr     isa.Operand
 	variables    map[string]isa.Operand
 	nextDataAddr isa.Operand
+	controlStack []ControlFrame
 }
 
 func (t *Translator) emit(opcode isa.Opcode, operand isa.Operand) {
@@ -66,4 +69,34 @@ func (t *Translator) emitStore() {
 	t.emit(isa.ST_ADDR, t.tmpAddr)
 	t.emitDrop()
 	t.emit(isa.ST_IND, t.tmpAddr)
+}
+
+func (t *Translator) emitIf() {
+	t.emitDrop()
+	t.emit(isa.CMP, t.zeroAddr)
+
+	jumpIndex := len(t.code)
+	t.emit(isa.JZ, 0)
+
+	t.controlStack = append(t.controlStack, ControlFrame{
+		kind:      If,
+		jumpIndex: jumpIndex,
+	})
+}
+
+func (t *Translator) emitThen() error {
+	if len(t.controlStack) == 0 {
+		return errors.New("them without matching if")
+
+	}
+
+	frame := t.controlStack[len(t.controlStack)-1]
+	if frame.kind != If {
+		return errors.New("then closes wrong frame")
+	}
+
+	t.controlStack = t.controlStack[:len(t.controlStack)-1]
+	addr := t.currentAddr()
+	t.patchOperand(frame.jumpIndex, addr)
+	return nil
 }

@@ -86,7 +86,7 @@ func (t *Translator) emitIf() {
 
 func (t *Translator) emitThen() error {
 	if len(t.controlStack) == 0 {
-		return errors.New("them without matching if")
+		return errors.New("then without matching if")
 
 	}
 

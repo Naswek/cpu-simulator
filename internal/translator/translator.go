@@ -71,7 +71,7 @@ func Translate(source string) ([]isa.Instruction, error) {
 	}
 
 	if len(translator.controlStack) != 0 {
-		return nil, errors.New("unclodes control frame")
+		return nil, errors.New("unclosed control frame")
 	}
 
 	return translator.code, nil

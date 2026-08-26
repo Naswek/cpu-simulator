@@ -162,3 +162,44 @@ func (t *Translator) emitAgain() error {
 	t.emit(isa.JMP, isa.Operand(frame.startAddr))
 	return nil
 }
+
+func (t *Translator) emitWhile() error {
+	if len(t.controlStack) == 0 {
+		return errors.New("while without matching begin")
+	}
+
+	frame := t.controlStack[len(t.controlStack)-1]
+	if frame.kind != Begin {
+		return errors.New("while closes wrong frame")
+	}
+
+	t.emitDrop()
+	t.emit(isa.CMP, t.zeroAddr)
+
+	jumpIndex := len(t.code)
+	t.emit(isa.JZ, 0)
+
+	t.controlStack[len(t.controlStack)-1] = ControlFrame{
+		kind:      While,
+		jumpIndex: jumpIndex,
+		startAddr: frame.startAddr,
+	}
+	return nil
+}
+
+func (t *Translator) emitRepeat() error {
+	if len(t.controlStack) == 0 {
+		return errors.New("repeat without matching begin")
+	}
+
+	frame := t.controlStack[len(t.controlStack)-1]
+	if frame.kind != While {
+		return errors.New("repeat closes wrong frame")
+	}
+
+	t.controlStack = t.controlStack[:len(t.controlStack)-1]
+	t.emit(isa.JMP, isa.Operand(frame.startAddr))
+	addr := t.currentAddr()
+	t.patchOperand(frame.jumpIndex, addr)
+	return nil
+}

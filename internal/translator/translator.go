@@ -93,6 +93,22 @@ func Translate(source string) ([]isa.Instruction, error) {
 			continue
 		}
 
+		if isWord && t.Text == "while" {
+			err = translator.emitWhile()
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
+		if isWord && t.Text == "repeat" {
+			err = translator.emitRepeat()
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
 		err := sortToken(t, translator)
 		if err != nil {
 			return nil, err

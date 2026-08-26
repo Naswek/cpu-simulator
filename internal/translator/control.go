@@ -16,6 +16,7 @@ const (
 	If ControlKind = iota
 	Else
 	Begin
+	While
 )
 
 func (t *Translator) currentAddr() uint32 {

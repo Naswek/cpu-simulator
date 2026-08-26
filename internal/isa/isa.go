@@ -1,12 +1,13 @@
 package isa
 
 const (
-	WordSize        uint32 = 4
-	MemSize         uint32 = 2048
-	DataStackSize   uint32 = MemSize
-	ReturnStackSize uint32 = 1500
-	PortInput       uint8  = 0
-	PortOutput      uint8  = 1
+	WordSize         uint32 = 4
+	MemSize          uint32 = 2048
+	DataStackSize    uint32 = MemSize
+	ReturnStackSize  uint32 = 1500
+	PortInput        uint8  = 0
+	PortOutput       uint8  = 1
+	InterruptVectors        = 2
 )
 
 type IODevice string
@@ -62,6 +63,10 @@ const (
 )
 
 type Operand uint32
+
+func InterruptVectorAddress(vector uint8) Operand {
+	return Operand(WordSize) + Operand(vector)*Operand(WordSize)
+}
 
 const (
 	HALT = 0x01

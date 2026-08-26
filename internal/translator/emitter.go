@@ -147,3 +147,18 @@ func (t *Translator) emitUntil() error {
 	t.emit(isa.JZ, isa.Operand(frame.startAddr))
 	return nil
 }
+
+func (t *Translator) emitAgain() error {
+	if len(t.controlStack) == 0 {
+		return errors.New("again without matching begin")
+	}
+
+	frame := t.controlStack[len(t.controlStack)-1]
+	if frame.kind != Begin {
+		return errors.New("again closes wrong frame")
+	}
+
+	t.controlStack = t.controlStack[:len(t.controlStack)-1]
+	t.emit(isa.JMP, isa.Operand(frame.startAddr))
+	return nil
+}

@@ -85,6 +85,14 @@ func Translate(source string) ([]isa.Instruction, error) {
 			continue
 		}
 
+		if isWord && t.Text == "again" {
+			err = translator.emitAgain()
+			if err != nil {
+				return nil, err
+			}
+			continue
+		}
+
 		err := sortToken(t, translator)
 		if err != nil {
 			return nil, err

@@ -6,14 +6,24 @@ import (
 )
 
 type Translator struct {
-	code         []isa.Instruction
-	tmpAddr      isa.Operand
-	tmpValueAddr isa.Operand
-	zeroAddr     isa.Operand
-	variables    map[string]isa.Operand
-	nextDataAddr isa.Operand
-	controlStack []ControlFrame
-	data         map[isa.Operand]int32
+	code            []isa.Instruction
+	tmpAddr         isa.Operand
+	tmpValueAddr    isa.Operand
+	zeroAddr        isa.Operand
+	variables       map[string]isa.Operand
+	nextDataAddr    isa.Operand
+	controlStack    []ControlFrame
+	data            map[isa.Operand]int32
+	words           map[string]isa.Operand
+	unresolvedCalls []CallPatch
+	insideWord      bool
+	mainStarted     bool
+	entryJumpIndex  int
+}
+
+type CallPatch struct {
+	name  string
+	index int
 }
 
 func (t *Translator) emit(opcode isa.Opcode, operand isa.Operand) {
@@ -24,6 +34,23 @@ func (t *Translator) emit(opcode isa.Opcode, operand isa.Operand) {
 }
 func (t *Translator) emitNoArg(opcode isa.Opcode) {
 	t.emit(opcode, 0)
+}
+
+func (t *Translator) emitCall(addr isa.Operand) {
+	t.emit(isa.CALL, addr)
+}
+
+func (t *Translator) emitUnresolvedCall(name string) {
+	index := len(t.code)
+	t.emitCall(0)
+	t.unresolvedCalls = append(t.unresolvedCalls, CallPatch{
+		name:  name,
+		index: index,
+	})
+}
+
+func (t *Translator) emitReturn() {
+	t.emitNoArg(isa.RET)
 }
 
 func (t *Translator) emitPushImm(value int32) {

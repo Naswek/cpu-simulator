@@ -2,7 +2,6 @@ package machine
 
 import (
 	"cpu-simulator/internal/isa"
-	"fmt"
 )
 
 type CPU struct {
@@ -38,18 +37,6 @@ func (c *CPU) setFlag(flag isa.Status, value bool) {
 
 func (c *CPU) flag(flag isa.Status) bool {
 	return c.SR&(1<<flag) != 0
-}
-
-func (c *CPU) readWord(addr uint32) (uint32, error) {
-	if addr%isa.WordSize != 0 {
-		return 0, fmt.Errorf("unalighned memory address: 0x%X", addr)
-	}
-
-	index := addr / isa.WordSize
-	if index >= uint32(len(c.memoryImage)) {
-		return 0, fmt.Errorf("memory address out of range: 0x%X", addr)
-	}
-	return c.memoryImage[index], nil
 }
 
 func (c *CPU) instructionTick(opcode isa.Opcode) int {

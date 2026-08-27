@@ -10,8 +10,8 @@ type CPU struct {
 	PC uint32
 	IR isa.Instruction
 	SR uint8
-	SP int32
-	RS int32
+	DSP int32
+	RSP int32
 	memoryImage []uint32
 	tickCounter int
 	halted bool

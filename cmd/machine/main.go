@@ -10,7 +10,7 @@ import (
 
 func main() {
 	if len(os.Args) != 3 {
-		log.Fatalf("not enough args\nusage: translator <input.forth> <output.bin>")
+		log.Fatalf("not enough args\nusage: machine <program.bin> <max_ticks>")
 	}
 
 	programFile := os.Args[1]
@@ -18,13 +18,12 @@ func main() {
 	if err != nil {
 		log.Fatalf("second arg must be number")
 	}
-	
 
 	program, err := isa.ReadProgram(programFile)
 	if err != nil {
 		log.Fatalf("unexpected error: %v", err)
 	}
-	
+
 	cpu := machine.NewCPU(program)
 	err = cpu.Run(limit)
 

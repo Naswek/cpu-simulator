@@ -25,18 +25,27 @@ func main() {
 
 	source := string(bytes)
 
-	instructions, err := translator.Translate(source)
+	program, err := translator.Translate(source)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	data := isa.EncodeProgram(instructions)
-	err = isa.WriteProgram(outputFile, data)
+	image, err := program.MemoryImage()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = isa.WriteDisasm(makeDisasm(outputFile), data)
+	err = isa.WriteProgram(outputFile, image)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	code, err := program.CodeWords()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = isa.WriteDisasm(makeDisasm(outputFile), code)
 	if err != nil {
 		log.Fatalf("something went wrong with disasm log: %v", err)
 	}

@@ -25,6 +25,46 @@ func (c *CPU) Step() error {
 
 	case isa.JMP:
 		c.PC = uint32(c.IR.Operand)
+
+	case isa.LD_IMM:
+		c.ACC = int32(c.IR.Operand)
+	case isa.LD_ADDR:
+		word, err := c.readWord(uint32(c.IR.Operand))
+		if err != nil {
+			return err
+		}
+		c.ACC = int32(word)
+	case isa.ST_ADDR:
+		err := c.writeWord(uint32(c.IR.Operand), uint32(c.ACC))
+		if err != nil {
+			return err
+		}
+	case isa.LD_IND:
+		ptr, err := c.readWord(uint32(c.IR.Opcode))
+		if err != nil {
+			return nil
+		}
+
+		word, err = c.readWord(ptr)
+		if err != nil {
+			return err
+		}
+
+		c.ACC = int32(word)
+	case isa.ST_IND:
+		ptr, err := c.readWord(uint32(c.IR.Opcode))
+		if err != nil {
+			return nil
+		}
+
+		err = c.writeWord(ptr, uint32(c.ACC))
+		if err != nil {
+			return nil
+		}
+
+
+
+		
 	default:
 		return fmt.Errorf("unknown opcode: %v", c.IR.Opcode)
 	}

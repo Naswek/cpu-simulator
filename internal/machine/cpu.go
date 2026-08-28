@@ -25,6 +25,10 @@ func NewCPU(program []uint32) *CPU {
 	return &CPU{
 		memoryImage: mem,
 		PC:          0,
+		dataStack:   make([]int32, 0),
+		returnStack: make([]uint32, 0),
+		DSP:         0,
+		RSP:         0,
 	}
 }
 

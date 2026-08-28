@@ -19,7 +19,7 @@ func (c *CPU) popData() (int32, error) {
 	if len(c.dataStack) == 0 {
 		return 0, fmt.Errorf("data stack underflow")
 	}
-	
+
 	data := c.dataStack[len(c.dataStack)-1]
 	c.dataStack = c.dataStack[:len(c.dataStack)-1]
 	c.DSP--
@@ -40,11 +40,11 @@ func (c *CPU) popReturn() (uint32, error) {
 	if len(c.returnStack) == 0 {
 		return 0, fmt.Errorf("return stack underflow")
 	}
-	
+
 	addr := c.returnStack[len(c.returnStack)-1]
 	c.returnStack = c.returnStack[:len(c.returnStack)-1]
 	c.RSP--
-	return addr, nil	
+	return addr, nil
 }
 
 func (c *CPU) peekData(offset uint32) (int32, error) {

@@ -45,7 +45,7 @@ func (c *CPU) jumpIf(condition bool, addr isa.Operand) error {
 	return c.jump(addr)
 }
 
-func (c *CPU) exeJump(opcode isa.Opcode) error {
+func (c *CPU) exeсJump(opcode isa.Opcode) error {
 	jumpOperation, ok := jumpOpcodes[opcode]
 	if !ok {
 		return fmt.Errorf("unknpwn jump opcode: %v", opcode)

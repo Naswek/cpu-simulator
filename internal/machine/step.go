@@ -40,9 +40,9 @@ func (c *CPU) Step() error {
 			return err
 		}
 	case isa.LD_IND:
-		ptr, err := c.readWord(uint32(c.IR.Opcode))
+		ptr, err := c.readWord(uint32(c.IR.Operand))
 		if err != nil {
-			return nil
+			return err
 		}
 
 		word, err = c.readWord(ptr)
@@ -54,17 +54,14 @@ func (c *CPU) Step() error {
 	case isa.ST_IND:
 		ptr, err := c.readWord(uint32(c.IR.Opcode))
 		if err != nil {
-			return nil
+			return err
 		}
 
 		err = c.writeWord(ptr, uint32(c.ACC))
 		if err != nil {
-			return nil
+			return err
 		}
 
-
-
-		
 	default:
 		return fmt.Errorf("unknown opcode: %v", c.IR.Opcode)
 	}

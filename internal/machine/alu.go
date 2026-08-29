@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type Operation func(left, right int32) (int32, error) 
+type Operation func(left, right int32) (int32, error)
 
 var operations = map[isa.Opcode]Operation{
 	isa.ADD: func(left, right int32) (int32, error) {
@@ -23,9 +23,15 @@ var operations = map[isa.Opcode]Operation{
 		}
 		return left / right, nil
 	},
+	isa.MOD: func(left, right int32) (int32, error) {
+		if right == 0 {
+			return 0, fmt.Errorf("division by zero")
+		}
+		return left % right, nil
+	},
 	isa.AND: func(left, right int32) (int32, error) {
 		return left & right, nil
-	}, 
+	},
 	isa.OR: func(left, right int32) (int32, error) {
 		return left | right, nil
 	},
@@ -46,7 +52,7 @@ func (c *CPU) readOperand() (int32, error) {
 
 func (c *CPU) execOp(opcode isa.Opcode) error {
 	operation, ok := operations[opcode]
-	if ok {
+	if !ok {
 		return fmt.Errorf("unknown opcode: %v", opcode)
 	}
 
@@ -78,7 +84,7 @@ func (c *CPU) decrement() {
 func (c *CPU) execCmp(value int32) {
 	result := c.ACC - value
 	c.updateZN(result)
-} 
+}
 
 func (c *CPU) execNot() {
 	result := ^c.ACC

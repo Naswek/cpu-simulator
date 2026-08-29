@@ -56,14 +56,6 @@ func (c *CPU) updateZN(value int32) {
 	c.setFlag(isa.N, value < 0)
 }
 
-func (c *CPU) readOperand() (int32, error) {
-	word, err := c.readWord(uint32(c.IR.Operand))
-	if err != nil {
-		return 0, err
-	}
-	return int32(word), nil
-}
-
 func (c *CPU) execBinaryOp(opcode isa.Opcode) error {
 	operation, ok := binaryOperations[opcode]
 	if !ok {
@@ -77,7 +69,7 @@ func (c *CPU) execBinaryOp(opcode isa.Opcode) error {
 
 	result, err := operation(c.ACC, right)
 	if err != nil {
-		return nil
+		return err
 	}
 
 	c.ACC = result

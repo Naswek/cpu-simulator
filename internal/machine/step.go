@@ -5,6 +5,18 @@ import (
 	"fmt"
 )
 
+var loadOpcodes = map[isa.Opcode]struct{}{
+	isa.LD_IMM:  {},
+	isa.LD_ADDR: {},
+	isa.LD_IND:  {},
+	isa.LD_SP_N: {},
+}
+
+var storeOpcodes = map[isa.Opcode]struct{}{
+	isa.ST_ADDR: {},
+	isa.ST_IND:  {},
+}
+
 func (c *CPU) Step() error {
 	if c.halted {
 		return nil
@@ -18,14 +30,14 @@ func (c *CPU) Step() error {
 	c.IR = isa.DecodeInstruction(word)
 	c.PC += isa.WordSize
 
-	if _, ok := binaryOperations[c.IR.Opcode]; ok {
-		if err := c.execBinaryOp(c.IR.Opcode); err != nil {
-			return err
-		}
+	if _, ok := loadOpcodes[c.IR.Opcode]; ok {
+		err = c.execLoad()
+	} else if _, ok := storeOpcodes[c.IR.Opcode]; ok {
+		err = c.writeOperand(c.ACC)
+	} else if _, ok := binaryOperations[c.IR.Opcode]; ok {
+		err = c.execBinaryOp(c.IR.Opcode)
 	} else if _, ok := unaryOperations[c.IR.Opcode]; ok {
-		if err := c.execUnaryOp(c.IR.Opcode); err != nil {
-			return err
-		}
+		err = c.execUnaryOp(c.IR.Opcode)
 	} else {
 
 		switch c.IR.Opcode {
@@ -35,46 +47,25 @@ func (c *CPU) Step() error {
 
 		case isa.JMP:
 			c.PC = uint32(c.IR.Operand)
-
-		case isa.LD_IMM:
-			c.ACC = int32(c.IR.Operand)
-		case isa.LD_ADDR:
-			word, err := c.readWord(uint32(c.IR.Operand))
-			if err != nil {
-				return err
+		case isa.POP:
+			var value int32
+			value, err = c.popData()
+			c.ACC = value
+			c.updateZN(c.ACC)
+		case isa.PUSH:
+			err = c.pushData(c.ACC)
+		case isa.CMP:
+			var value int32
+			value, err = c.readOperand()
+			if err == nil {
+				c.execCmp(value)
 			}
-			c.ACC = int32(word)
-		case isa.ST_ADDR:
-			err := c.writeWord(uint32(c.IR.Operand), uint32(c.ACC))
-			if err != nil {
-				return err
-			}
-		case isa.LD_IND:
-			ptr, err := c.readWord(uint32(c.IR.Operand))
-			if err != nil {
-				return err
-			}
-
-			word, err = c.readWord(ptr)
-			if err != nil {
-				return err
-			}
-
-			c.ACC = int32(word)
-		case isa.ST_IND:
-			ptr, err := c.readWord(uint32(c.IR.Opcode))
-			if err != nil {
-				return err
-			}
-
-			err = c.writeWord(ptr, uint32(c.ACC))
-			if err != nil {
-				return err
-			}
-
 		default:
 			return fmt.Errorf("unknown opcode: %v", c.IR.Opcode)
 		}
+	}
+	if err != nil {
+		return err
 	}
 	c.tickCounter += c.instructionTick(c.IR.Opcode)
 	return nil

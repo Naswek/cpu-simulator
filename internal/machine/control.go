@@ -45,10 +45,10 @@ func (c *CPU) jumpIf(condition bool, addr isa.Operand) error {
 	return c.jump(addr)
 }
 
-func (c *CPU) exeсJump(opcode isa.Opcode) error {
+func (c *CPU) execJump(opcode isa.Opcode) error {
 	jumpOperation, ok := jumpOpcodes[opcode]
 	if !ok {
-		return fmt.Errorf("unknpwn jump opcode: %v", opcode)
+		return fmt.Errorf("unknown jump opcode: %v", opcode)
 	}
 
 	return jumpOperation(c, c.IR.Operand)

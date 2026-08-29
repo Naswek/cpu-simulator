@@ -39,7 +39,7 @@ func (c *CPU) Step() error {
 	} else if _, ok := unaryOperations[c.IR.Opcode]; ok {
 		err = c.execUnaryOp(c.IR.Opcode)
 	} else if _, ok := jumpOpcodes[c.IR.Opcode]; ok {
-		err = c.exeсJump(c.IR.Opcode)
+		err = c.execJump(c.IR.Opcode)
 	} else {
 
 		switch c.IR.Opcode {
@@ -47,13 +47,13 @@ func (c *CPU) Step() error {
 			c.halted = true
 		case isa.NOP:
 
-		case isa.JMP:
-			c.PC = uint32(c.IR.Operand)
 		case isa.POP:
 			var value int32
 			value, err = c.popData()
-			c.ACC = value
-			c.updateZN(c.ACC)
+			if err == nil {
+				c.ACC = value
+				c.updateZN(c.ACC)
+			}
 		case isa.PUSH:
 			err = c.pushData(c.ACC)
 		case isa.CMP:

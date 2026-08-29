@@ -18,54 +18,64 @@ func (c *CPU) Step() error {
 	c.IR = isa.DecodeInstruction(word)
 	c.PC += isa.WordSize
 
-	switch c.IR.Opcode {
-	case isa.HALT:
-		c.halted = true
-	case isa.NOP:
-
-	case isa.JMP:
-		c.PC = uint32(c.IR.Operand)
-
-	case isa.LD_IMM:
-		c.ACC = int32(c.IR.Operand)
-	case isa.LD_ADDR:
-		word, err := c.readWord(uint32(c.IR.Operand))
-		if err != nil {
+	if _, ok := binaryOperations[c.IR.Opcode]; ok {
+		if err := c.execBinaryOp(c.IR.Opcode); err != nil {
 			return err
 		}
-		c.ACC = int32(word)
-	case isa.ST_ADDR:
-		err := c.writeWord(uint32(c.IR.Operand), uint32(c.ACC))
-		if err != nil {
+	} else if _, ok := unaryOperations[c.IR.Opcode]; ok {
+		if err := c.execUnaryOp(c.IR.Opcode); err != nil {
 			return err
 		}
-	case isa.LD_IND:
-		ptr, err := c.readWord(uint32(c.IR.Operand))
-		if err != nil {
-			return err
-		}
+	} else {
 
-		word, err = c.readWord(ptr)
-		if err != nil {
-			return err
-		}
+		switch c.IR.Opcode {
+		case isa.HALT:
+			c.halted = true
+		case isa.NOP:
 
-		c.ACC = int32(word)
-	case isa.ST_IND:
-		ptr, err := c.readWord(uint32(c.IR.Opcode))
-		if err != nil {
-			return err
-		}
+		case isa.JMP:
+			c.PC = uint32(c.IR.Operand)
 
-		err = c.writeWord(ptr, uint32(c.ACC))
-		if err != nil {
-			return err
-		}
+		case isa.LD_IMM:
+			c.ACC = int32(c.IR.Operand)
+		case isa.LD_ADDR:
+			word, err := c.readWord(uint32(c.IR.Operand))
+			if err != nil {
+				return err
+			}
+			c.ACC = int32(word)
+		case isa.ST_ADDR:
+			err := c.writeWord(uint32(c.IR.Operand), uint32(c.ACC))
+			if err != nil {
+				return err
+			}
+		case isa.LD_IND:
+			ptr, err := c.readWord(uint32(c.IR.Operand))
+			if err != nil {
+				return err
+			}
 
-	default:
-		return fmt.Errorf("unknown opcode: %v", c.IR.Opcode)
+			word, err = c.readWord(ptr)
+			if err != nil {
+				return err
+			}
+
+			c.ACC = int32(word)
+		case isa.ST_IND:
+			ptr, err := c.readWord(uint32(c.IR.Opcode))
+			if err != nil {
+				return err
+			}
+
+			err = c.writeWord(ptr, uint32(c.ACC))
+			if err != nil {
+				return err
+			}
+
+		default:
+			return fmt.Errorf("unknown opcode: %v", c.IR.Opcode)
+		}
 	}
-
 	c.tickCounter += c.instructionTick(c.IR.Opcode)
 	return nil
 }

@@ -5,9 +5,9 @@ import (
 	"fmt"
 )
 
-type Operation func(left, right int32) (int32, error)
+type BinaryOperation func(left, right int32) (int32, error)
 
-var operations = map[isa.Opcode]Operation{
+var binaryOperations = map[isa.Opcode]BinaryOperation{
 	isa.ADD: func(left, right int32) (int32, error) {
 		return left + right, nil
 	},
@@ -37,6 +37,20 @@ var operations = map[isa.Opcode]Operation{
 	},
 }
 
+type UnaryOperation func(value int32) (int32, error)
+
+var unaryOperations = map[isa.Opcode]UnaryOperation{
+	isa.INC: func(value int32) (int32, error) {
+		return value + 1, nil
+	},
+	isa.DEC: func(value int32) (int32, error) {
+		return value - 1, nil
+	},
+	isa.NOT: func(value int32) (int32, error) {
+		return ^value, nil
+	},
+}
+
 func (c *CPU) updateZN(value int32) {
 	c.setFlag(isa.Z, value == 0)
 	c.setFlag(isa.N, value < 0)
@@ -50,10 +64,10 @@ func (c *CPU) readOperand() (int32, error) {
 	return int32(word), nil
 }
 
-func (c *CPU) execOp(opcode isa.Opcode) error {
-	operation, ok := operations[opcode]
+func (c *CPU) execBinaryOp(opcode isa.Opcode) error {
+	operation, ok := binaryOperations[opcode]
 	if !ok {
-		return fmt.Errorf("unknown opcode: %v", opcode)
+		return fmt.Errorf("unknown alu opcode: %v", opcode)
 	}
 
 	right, err := c.readOperand()
@@ -71,23 +85,23 @@ func (c *CPU) execOp(opcode isa.Opcode) error {
 	return nil
 }
 
-func (c *CPU) increment() {
-	c.ACC++
-	c.updateZN(c.ACC)
-}
+func (c *CPU) execUnaryOp(opcode isa.Opcode) error {
+	operation, ok := unaryOperations[opcode]
+	if !ok {
+		return fmt.Errorf("unknown unary alu opcode: %v", opcode)
+	}
 
-func (c *CPU) decrement() {
-	c.ACC--
-	c.updateZN(c.ACC)
+	result, err := operation(c.ACC)
+	if err != nil {
+		return err
+	}
+
+	c.ACC = result
+	c.updateZN(result)
+	return nil
 }
 
 func (c *CPU) execCmp(value int32) {
 	result := c.ACC - value
 	c.updateZN(result)
-}
-
-func (c *CPU) execNot() {
-	result := ^c.ACC
-	c.updateZN(result)
-	c.ACC = result
 }

@@ -40,6 +40,8 @@ func (c *CPU) Step() error {
 		err = c.execUnaryOp(c.IR.Opcode)
 	} else if _, ok := jumpOpcodes[c.IR.Opcode]; ok {
 		err = c.execJump(c.IR.Opcode)
+	} else if operation, ok := controlOpcodes[c.IR.Opcode]; ok {
+		err = operation(c)
 	} else {
 
 		switch c.IR.Opcode {

@@ -42,6 +42,8 @@ func (c *CPU) Step() error {
 		err = c.execJump(c.IR.Opcode)
 	} else if operation, ok := controlOpcodes[c.IR.Opcode]; ok {
 		err = operation(c)
+	} else if operation, ok := ioOpcodes[c.IR.Opcode]; ok {
+		err = operation(c)
 	} else {
 
 		switch c.IR.Opcode {

@@ -37,13 +37,13 @@ func (c *CPU) jump(addr isa.Operand) error {
 	return nil
 }
 
-type ControlOperation func(c *CPU) error 
+type ControlOperation func(c *CPU) error
 
-var controlOpcodes = map[isa.Opcode]ControlOperation {
-	isa.CALL: func (c *CPU) error {
+var controlOpcodes = map[isa.Opcode]ControlOperation{
+	isa.CALL: func(c *CPU) error {
 		return c.execCall()
 	},
-	isa.RET: func (c *CPU) error {
+	isa.RET: func(c *CPU) error {
 		return c.execRet()
 	},
 }
@@ -77,5 +77,5 @@ func (c *CPU) execRet() error {
 	if err != nil {
 		return err
 	}
-	return c.jump(isa.Operand(addr))	
+	return c.jump(isa.Operand(addr))
 }

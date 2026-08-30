@@ -16,6 +16,7 @@ type CPU struct {
 	memoryImage []uint32
 	tickCounter int
 	halted      bool
+	io          *IOController
 }
 
 func NewCPU(program []uint32) *CPU {
@@ -29,6 +30,7 @@ func NewCPU(program []uint32) *CPU {
 		returnStack: make([]uint32, 0),
 		DSP:         0,
 		RSP:         0,
+		io:          newIOController(),
 	}
 }
 

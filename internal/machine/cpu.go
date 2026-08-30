@@ -20,6 +20,10 @@ type CPU struct {
 }
 
 func NewCPU(program []uint32) *CPU {
+	return NewCPUWithInputEvents(program, nil)
+}
+
+func NewCPUWithInputEvents(program []uint32, inputEvents []InputEvent) *CPU {
 	mem := make([]uint32, isa.MemSize/isa.WordSize)
 	copy(mem, program)
 
@@ -30,7 +34,7 @@ func NewCPU(program []uint32) *CPU {
 		returnStack: make([]uint32, 0),
 		DSP:         0,
 		RSP:         0,
-		io:          newIOController(),
+		io:          newIOControllerWithEvents(inputEvents),
 	}
 }
 

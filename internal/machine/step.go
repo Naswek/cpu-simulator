@@ -18,16 +18,16 @@ var storeOpcodes = map[isa.Opcode]struct{}{
 }
 
 func (c *CPU) Step() error {
+	if c.halted {
+		return nil
+	}
+
 	if err := c.io.Advance(c.tickCounter); err != nil {
 		return err
 	}
 
 	if err := c.interruptHandler(); err != nil {
 		return err
-	}
-
-	if c.halted {
-		return nil
 	}
 
 	word, err := c.readWord(c.PC)

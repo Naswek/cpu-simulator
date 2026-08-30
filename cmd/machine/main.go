@@ -3,6 +3,7 @@ package main
 import (
 	"cpu-simulator/internal/isa"
 	"cpu-simulator/internal/machine"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -30,4 +31,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("something went wrong: %v", err)
 	}
+
+	fmt.Print(cpu.Output())
 }

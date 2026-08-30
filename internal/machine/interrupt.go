@@ -2,12 +2,8 @@ package machine
 
 import (
 	"cpu-simulator/internal/isa"
+	"fmt"
 )
-
-type InputEvent struct {
-	Tick  uint64
-	Value int32
-}
 
 var interruptOpcodes = map[isa.Opcode]ControlOperation{
 	isa.EI:   (*CPU).execEI,
@@ -26,11 +22,11 @@ func (c *CPU) execDI() error {
 }
 
 func (c *CPU) execIRET() error {
-	c.setFlag(isa.IM, false)
 	addr, err := c.popReturn()
 	if err != nil {
 		return err
 	}
+	c.setFlag(isa.IM, false)
 	c.PC = addr
 	return nil
 }
@@ -41,12 +37,15 @@ func (c *CPU) interruptHandler() error {
 		if err != nil {
 			return err
 		}
+		if addr == 0 {
+			return fmt.Errorf("interrupt vector %d is not initialized", c.io.IRQVector())
+		}
 		if err := c.pushReturn(c.PC); err != nil {
 			return err
 		}
 		c.setFlag(isa.IM, true)
 		c.io.ClearIRQ()
-		c.PC = addr
+		return c.jump(isa.Operand(addr))
 	}
 	return nil
 }

@@ -3,7 +3,13 @@ package machine
 import (
 	"cpu-simulator/internal/isa"
 	"fmt"
+	"sort"
 )
+
+type InputEvent struct {
+	Tick  uint64
+	Value int32
+}
 
 type IOController struct {
 	inputValue int32
@@ -30,6 +36,9 @@ func newIOController() *IOController {
 func newIOControllerWithEvents(inputEvents []InputEvent) *IOController {
 	events := make([]InputEvent, len(inputEvents))
 	copy(events, inputEvents)
+	sort.SliceStable(events, func(i, j int) bool {
+		return events[i].Tick < events[j].Tick
+	})
 
 	return &IOController{
 		irqVector:   isa.PortsTable[isa.PortInput].InterruptVector,
@@ -51,6 +60,9 @@ func (io *IOController) Advance(tick int) error {
 
 		if io.inputReady {
 			return fmt.Errorf("input overrun at tick %d", tick)
+		}
+		if event.Value < 0 || event.Value > 255 {
+			return fmt.Errorf("input value out of byte range at tick %d: %d", tick, event.Value)
 		}
 
 		io.inputValue = event.Value
@@ -131,4 +143,12 @@ func (io *IOController) OutputBytes() []byte {
 	output := make([]byte, len(io.output))
 	copy(output, io.output)
 	return output
+}
+
+func (c *CPU) Output() string {
+	return c.io.Output()
+}
+
+func (c *CPU) OutputBytes() []byte {
+	return c.io.OutputBytes()
 }

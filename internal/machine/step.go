@@ -18,6 +18,14 @@ var storeOpcodes = map[isa.Opcode]struct{}{
 }
 
 func (c *CPU) Step() error {
+	if err := c.io.Advance(c.tickCounter); err != nil {
+		return err
+	}
+
+	if err := c.interruptHandler(); err != nil {
+		return err
+	}
+
 	if c.halted {
 		return nil
 	}
@@ -43,6 +51,8 @@ func (c *CPU) Step() error {
 	} else if operation, ok := controlOpcodes[c.IR.Opcode]; ok {
 		err = operation(c)
 	} else if operation, ok := ioOpcodes[c.IR.Opcode]; ok {
+		err = operation(c)
+	} else if operation, ok := interruptOpcodes[c.IR.Opcode]; ok {
 		err = operation(c)
 	} else {
 

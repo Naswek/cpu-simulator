@@ -9,6 +9,8 @@ import (
 	"strconv"
 )
 
+const inputTickStep uint64 = 10
+
 func main() {
 	if len(os.Args) != 3 {
 		log.Fatalf("not enough args\nusage: machine <program.bin> <max_ticks>")
@@ -24,8 +26,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("unexpected error: %v", err)
 	}
+	events := buildInputEvents(program, inputTickStep)
 
-	cpu := machine.NewCPU(program)
+	cpu := machine.NewCPUWithInputEvents(program, events)
 	err = cpu.Run(limit)
 
 	if err != nil {
@@ -33,4 +36,16 @@ func main() {
 	}
 
 	fmt.Print(cpu.Output())
+}
+
+func buildInputEvents(data []uint32, step uint64) []machine.InputEvent {
+	events := make([]machine.InputEvent, 0, len(data))
+
+	for i, b := range data {
+		events = append(events, machine.InputEvent{
+			Tick: uint64(i) * step,
+			Value: int32(b),
+		})
+	}
+	return events
 }

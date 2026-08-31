@@ -17,10 +17,7 @@ type CPU struct {
 	tickCounter int
 	halted      bool
 	io          *IOController
-}
-
-func NewCPU(program []uint32) *CPU {
-	return NewCPUWithInputEvents(program, nil)
+	trace       []LogEntry
 }
 
 func NewCPUWithInputEvents(program []uint32, inputEvents []InputEvent) *CPU {

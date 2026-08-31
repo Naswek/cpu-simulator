@@ -12,12 +12,13 @@ import (
 const inputTickStep uint64 = 10
 
 func main() {
-	if len(os.Args) != 3 {
+	if len(os.Args) != 4 {
 		log.Fatalf("not enough args\nusage: machine <program.bin> <max_ticks>")
 	}
 
 	programFile := os.Args[1]
 	limit, err := strconv.Atoi(os.Args[2])
+	logFile := os.Args[3]
 	if err != nil {
 		log.Fatalf("second arg must be number")
 	}
@@ -29,7 +30,7 @@ func main() {
 	events := buildInputEvents(program, inputTickStep)
 
 	cpu := machine.NewCPUWithInputEvents(program, events)
-	err = cpu.Run(limit)
+	err = cpu.Run(limit, logFile)
 
 	if err != nil {
 		log.Fatalf("something went wrong: %v", err)
@@ -43,7 +44,7 @@ func buildInputEvents(data []uint32, step uint64) []machine.InputEvent {
 
 	for i, b := range data {
 		events = append(events, machine.InputEvent{
-			Tick: uint64(i) * step,
+			Tick:  uint64(i) * step,
 			Value: int32(b),
 		})
 	}

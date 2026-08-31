@@ -5,19 +5,19 @@ import (
 )
 
 type CPU struct {
-	ACC         int32
-	PC          uint32
-	IR          isa.Instruction
-	SR          uint8
-	DSP         uint32
-	dataStack   []int32
-	returnStack []uint32
-	RSP         uint32
-	memoryImage []uint32
-	tickCounter int
-	halted      bool
-	io          *IOController
-	trace       []LogEntry
+	ACC            int32
+	PC             uint32
+	IR             isa.Instruction
+	SR             uint8
+	DSP            uint32
+	dataStack      []int32
+	returnStack    []uint32
+	RSP            uint32
+	memoryImage    []uint32
+	tickCounter    int
+	halted         bool
+	io             *IOController
+	trace          []LogEntry
 	interruptStack []InterruptFrame
 }
 
@@ -30,13 +30,13 @@ func NewCPUWithInputEvents(program []uint32, inputEvents []InputEvent) *CPU {
 	copy(mem, program)
 
 	return &CPU{
-		memoryImage: mem,
-		PC:          0,
-		dataStack:   make([]int32, 0),
-		returnStack: make([]uint32, 0),
-		DSP:         0,
-		RSP:         0,
-		io:          newIOControllerWithEvents(inputEvents),
+		memoryImage:    mem,
+		PC:             0,
+		dataStack:      make([]int32, 0),
+		returnStack:    make([]uint32, 0),
+		DSP:            0,
+		RSP:            0,
+		io:             newIOControllerWithEvents(inputEvents),
 		interruptStack: make([]InterruptFrame, 0),
 	}
 }

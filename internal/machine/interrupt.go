@@ -12,9 +12,9 @@ var interruptOpcodes = map[isa.Opcode]ControlOperation{
 }
 
 type InterruptFrame struct {
-	PC uint32
+	PC  uint32
 	ACC int32
-	SR uint8
+	SR  uint8
 }
 
 func (c *CPU) execEI() error {
@@ -50,14 +50,14 @@ func (c *CPU) interruptHandler() error {
 		}
 
 		frame := InterruptFrame{
-			PC: c.PC,
+			PC:  c.PC,
 			ACC: c.ACC,
-			SR: c.SR,
+			SR:  c.SR,
 		}
 		if err := c.pushFrame(frame); err != nil {
 			return err
 		}
-		
+
 		c.setFlag(isa.IM, true)
 		c.io.ClearIRQ()
 		return c.jump(isa.Operand(addr))

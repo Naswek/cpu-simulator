@@ -55,3 +55,22 @@ func (c *CPU) peekData(offset uint32) (int32, error) {
 	index := len(c.dataStack) - 1 - int(offset)
 	return c.dataStack[index], nil
 }
+
+func (c *CPU) pushFrame(frame InterruptFrame) error {
+	if len(c.interruptStack) >= int(isa.InterruptStackSize) {
+		return fmt.Errorf("interrupt stack overflow")
+	}
+
+	c.interruptStack = append(c.interruptStack, frame)
+	return nil
+}
+
+func (c *CPU) popFrame() (InterruptFrame, error) {
+	if len(c.interruptStack) == 0 {
+		return InterruptFrame{}, fmt.Errorf("interrupt stack underflow")
+	}
+
+	frame := c.interruptStack[len(c.interruptStack)-1]
+	c.interruptStack = c.interruptStack[:len(c.interruptStack)-1]
+	return frame, nil
+}

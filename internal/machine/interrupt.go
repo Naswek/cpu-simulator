@@ -11,6 +11,12 @@ var interruptOpcodes = map[isa.Opcode]ControlOperation{
 	isa.IRET: (*CPU).execIRET,
 }
 
+type InterruptFrame struct {
+	PC uint32
+	ACC int32
+	SR uint8
+}
+
 func (c *CPU) execEI() error {
 	c.setFlag(isa.IE, true)
 	return nil
@@ -22,12 +28,14 @@ func (c *CPU) execDI() error {
 }
 
 func (c *CPU) execIRET() error {
-	addr, err := c.popReturn()
+	frame, err := c.popFrame()
 	if err != nil {
 		return err
 	}
 	c.setFlag(isa.IM, false)
-	c.PC = addr
+	c.ACC = frame.ACC
+	c.PC = frame.PC
+	c.SR = frame.SR
 	return nil
 }
 
@@ -40,9 +48,16 @@ func (c *CPU) interruptHandler() error {
 		if addr == 0 {
 			return fmt.Errorf("interrupt vector %d is not initialized", c.io.IRQVector())
 		}
-		if err := c.pushReturn(c.PC); err != nil {
+
+		frame := InterruptFrame{
+			PC: c.PC,
+			ACC: c.ACC,
+			SR: c.SR,
+		}
+		if err := c.pushFrame(frame); err != nil {
 			return err
 		}
+		
 		c.setFlag(isa.IM, true)
 		c.io.ClearIRQ()
 		return c.jump(isa.Operand(addr))

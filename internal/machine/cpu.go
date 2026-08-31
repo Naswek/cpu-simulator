@@ -18,6 +18,7 @@ type CPU struct {
 	halted      bool
 	io          *IOController
 	trace       []LogEntry
+	interruptStack []InterruptFrame
 }
 
 func NewCPU(program []uint32) *CPU {
@@ -36,6 +37,7 @@ func NewCPUWithInputEvents(program []uint32, inputEvents []InputEvent) *CPU {
 		DSP:         0,
 		RSP:         0,
 		io:          newIOControllerWithEvents(inputEvents),
+		interruptStack: make([]InterruptFrame, 0),
 	}
 }
 

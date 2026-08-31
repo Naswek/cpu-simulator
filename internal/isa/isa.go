@@ -5,6 +5,7 @@ const (
 	MemSize          uint32 = 2048
 	DataStackSize    uint32 = MemSize
 	ReturnStackSize  uint32 = 1500
+	InterruptStackSize uint32 = 8
 	PortInput        uint8  = 0
 	PortOutput       uint8  = 1
 	InterruptVectors        = 2

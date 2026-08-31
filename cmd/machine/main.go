@@ -9,7 +9,8 @@ import (
 	"strconv"
 )
 
-const inputTickStep uint64 = 10
+const inputStartTick uint64 = 1000
+const inputTickStep uint64 = 100
 
 func main() {
 	if len(os.Args) != 5 {
@@ -33,7 +34,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("unexpected error with reading .txt file: %v", err)
 	}
-	events := buildInputEvents(data, inputTickStep)
+	events := buildInputEvents(data)
 
 	cpu := machine.NewCPUWithInputEvents(program, events)
 	err = cpu.Run(limit)
@@ -52,12 +53,12 @@ func main() {
 	}
 }
 
-func buildInputEvents(data []byte, step uint64) []machine.InputEvent {
+func buildInputEvents(data []byte	) []machine.InputEvent {
 	events := make([]machine.InputEvent, 0, len(data))
 
 	for i, b := range data {
 		events = append(events, machine.InputEvent{
-			Tick:  uint64(i) * step,
+			Tick: inputStartTick + uint64(i) * inputTickStep,
 			Value: int32(b),
 		})
 	}

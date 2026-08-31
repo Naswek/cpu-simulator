@@ -34,12 +34,13 @@ func (c *CPU) Log() string {
 	for _, entry := range c.trace {
 		fmt.Fprintf(
 			&b,
-			"tick=%d pc=0x%08X acc=%d sr=0x%02X ir=0x%08X interrupt=%t output=%q\n",
+			"tick=%d pc=0x%08X acc=%d sr=0x%02X ir=0x%08X instr=%q interrupt=%t output=%q\n",
 			entry.Tick,
 			entry.PC,
 			entry.ACC,
 			entry.SR,
-			entry.IR,
+			isa.EncodeInstruction(entry.IR),
+			isa.DisassembleInstruction(entry.IR),
 			entry.InInterrupt,
 			entry.Output,
 		)

@@ -20,6 +20,10 @@ type CPU struct {
 	trace       []LogEntry
 }
 
+func NewCPU(program []uint32) *CPU {
+	return NewCPUWithInputEvents(program, nil)
+}
+
 func NewCPUWithInputEvents(program []uint32, inputEvents []InputEvent) *CPU {
 	mem := make([]uint32, isa.MemSize/isa.WordSize)
 	copy(mem, program)

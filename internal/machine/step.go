@@ -84,5 +84,6 @@ func (c *CPU) Step() error {
 		return err
 	}
 	c.tickCounter += c.instructionTick(c.IR.Opcode)
+	c.appendLog()
 	return nil
 }

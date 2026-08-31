@@ -92,19 +92,40 @@ func newTranslator() *Translator {
 	code[0] = isa.Instruction{Opcode: isa.JMP, Operand: 0}
 
 	zeroAddr := isa.Operand(isa.MemSize - isa.WordSize)
-	tmpValueAddr := isa.Operand(isa.MemSize - 2*isa.WordSize)
-	tmpAddr := isa.Operand(isa.MemSize - 3*isa.WordSize)
+	mainScratch := scratch{
+		tmpAddr: isa.Operand(isa.MemSize - 2*isa.WordSize),
+	}
+	interruptScratch := scratch{
+		tmpAddr: isa.Operand(isa.MemSize - 3*isa.WordSize),
+	}
+	printRuntime := printRuntime{
+		valueAddr:          isa.Operand(isa.MemSize - 4*isa.WordSize),
+		divisorAddr:        isa.Operand(isa.MemSize - 5*isa.WordSize),
+		digitAddr:          isa.Operand(isa.MemSize - 6*isa.WordSize),
+		startedAddr:        isa.Operand(isa.MemSize - 7*isa.WordSize),
+		initialDivisorAddr: isa.Operand(isa.MemSize - 8*isa.WordSize),
+		tenAddr:            isa.Operand(isa.MemSize - 9*isa.WordSize),
+		asciiZeroAddr:      isa.Operand(isa.MemSize - 10*isa.WordSize),
+	}
 
 	data := map[isa.Operand]int32{
-		tmpAddr:      0,
-		tmpValueAddr: 0,
-		zeroAddr:     0,
+		mainScratch.tmpAddr:             0,
+		interruptScratch.tmpAddr:        0,
+		printRuntime.valueAddr:          0,
+		printRuntime.divisorAddr:        0,
+		printRuntime.digitAddr:          0,
+		printRuntime.startedAddr:        0,
+		printRuntime.initialDivisorAddr: 1000000000,
+		printRuntime.tenAddr:            10,
+		printRuntime.asciiZeroAddr:      48,
+		zeroAddr:                        0,
 	}
-	return &Translator{
+	translator := &Translator{
 		code:             code,
-		tmpAddr:          tmpAddr,
-		tmpValueAddr:     tmpValueAddr,
-		nextDataAddr:     tmpAddr,
+		mainScratch:      mainScratch,
+		interruptScratch: interruptScratch,
+		printRuntime:     printRuntime,
+		nextDataAddr:     printRuntime.asciiZeroAddr,
 		zeroAddr:         zeroAddr,
 		variables:        make(map[string]isa.Operand),
 		data:             data,
@@ -112,6 +133,8 @@ func newTranslator() *Translator {
 		interruptVectors: make(map[uint8]isa.Operand),
 		entryJumpIndex:   0,
 	}
+	translator.emitPrintNumberRoutine()
+	return translator
 }
 
 func (t *Translator) startMain() {
@@ -192,6 +215,7 @@ func Translate(source string) (Program, error) {
 					return Program{}, fmt.Errorf("cannot define word %q: %w", name.Text, err)
 				}
 				translator.insideWord = true
+				translator.insideInterruptHandler = name.Text == "handle_input"
 				i++
 				continue
 			case ";":
@@ -203,6 +227,7 @@ func Translate(source string) (Program, error) {
 				}
 				translator.emitReturn()
 				translator.insideWord = false
+				translator.insideInterruptHandler = false
 				continue
 			case "if":
 				if !translator.insideWord {

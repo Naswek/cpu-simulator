@@ -74,7 +74,7 @@ var builtins = map[string]BuiltinEmitter{
 		return nil
 	},
 	".": func(t *Translator) error {
-		t.emitEmit()
+		t.emitPrintNumber()
 		return nil
 	},
 	"key": func(t *Translator) error {

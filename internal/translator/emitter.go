@@ -5,21 +5,38 @@ import (
 	"errors"
 )
 
+type scratch struct {
+	tmpAddr isa.Operand
+}
+
+type printRuntime struct {
+	entryAddr          isa.Operand
+	valueAddr          isa.Operand
+	divisorAddr        isa.Operand
+	digitAddr          isa.Operand
+	startedAddr        isa.Operand
+	initialDivisorAddr isa.Operand
+	tenAddr            isa.Operand
+	asciiZeroAddr      isa.Operand
+}
+
 type Translator struct {
-	code             []isa.Instruction
-	tmpAddr          isa.Operand
-	tmpValueAddr     isa.Operand
-	zeroAddr         isa.Operand
-	variables        map[string]isa.Operand
-	nextDataAddr     isa.Operand
-	controlStack     []ControlFrame
-	data             map[isa.Operand]int32
-	words            map[string]isa.Operand
-	interruptVectors map[uint8]isa.Operand
-	unresolvedCalls  []CallPatch
-	insideWord       bool
-	mainStarted      bool
-	entryJumpIndex   int
+	code                   []isa.Instruction
+	mainScratch            scratch
+	interruptScratch       scratch
+	printRuntime           printRuntime
+	zeroAddr               isa.Operand
+	variables              map[string]isa.Operand
+	nextDataAddr           isa.Operand
+	controlStack           []ControlFrame
+	data                   map[isa.Operand]int32
+	words                  map[string]isa.Operand
+	interruptVectors       map[uint8]isa.Operand
+	unresolvedCalls        []CallPatch
+	insideWord             bool
+	insideInterruptHandler bool
+	mainStarted            bool
+	entryJumpIndex         int
 }
 
 type CallPatch struct {
@@ -59,19 +76,28 @@ func (t *Translator) emitPushImm(value int32) {
 	t.emitNoArg(isa.PUSH)
 }
 
+func (t *Translator) currentTmpAddr() isa.Operand {
+	if t.insideInterruptHandler {
+		return t.interruptScratch.tmpAddr
+	}
+	return t.mainScratch.tmpAddr
+}
+
 func (t *Translator) emitBinaryOp(opcode isa.Opcode) {
+	tmpAddr := t.currentTmpAddr()
 	t.emitDrop()
-	t.emit(isa.ST_ADDR, t.tmpAddr)
+	t.emit(isa.ST_ADDR, tmpAddr)
 	t.emitDrop()
-	t.emit(opcode, t.tmpAddr)
+	t.emit(opcode, tmpAddr)
 	t.emitNoArg(isa.PUSH)
 }
 
 func (t *Translator) emitCompareOp(jumpIfTrue isa.Opcode) {
+	tmpAddr := t.currentTmpAddr()
 	t.emitDrop()
-	t.emit(isa.ST_ADDR, t.tmpAddr)
+	t.emit(isa.ST_ADDR, tmpAddr)
 	t.emitDrop()
-	t.emit(isa.CMP, t.tmpAddr)
+	t.emit(isa.CMP, tmpAddr)
 	t.emitBoolFromJump(jumpIfTrue)
 }
 
@@ -130,18 +156,88 @@ func (t *Translator) emitEmit() {
 	t.emit(isa.OUT, isa.Operand(isa.PortOutput))
 }
 
-func (t *Translator) emitFetch() {
+func (t *Translator) emitPrintNumber() {
+	t.emitCall(t.printRuntime.entryAddr)
+}
+
+func (t *Translator) emitPrintNumberRoutine() {
+	rt := &t.printRuntime
+	rt.entryAddr = isa.Operand(t.currentAddr())
+
 	t.emitDrop()
-	t.emit(isa.ST_ADDR, t.tmpAddr)
-	t.emit(isa.LD_IND, t.tmpAddr)
+	t.emit(isa.ST_ADDR, rt.valueAddr)
+	t.emit(isa.CMP, t.zeroAddr)
+	zeroJumpIndex := len(t.code)
+	t.emit(isa.JZ, 0)
+
+	t.emit(isa.LD_ADDR, rt.initialDivisorAddr)
+	t.emit(isa.ST_ADDR, rt.divisorAddr)
+	t.emit(isa.LD_IMM, 0)
+	t.emit(isa.ST_ADDR, rt.startedAddr)
+
+	loopAddr := t.currentAddr()
+	t.emit(isa.LD_ADDR, rt.divisorAddr)
+	t.emit(isa.CMP, t.zeroAddr)
+	doneJumpIndex := len(t.code)
+	t.emit(isa.JZ, 0)
+
+	t.emit(isa.LD_ADDR, rt.valueAddr)
+	t.emit(isa.DIV, rt.divisorAddr)
+	t.emit(isa.ST_ADDR, rt.digitAddr)
+
+	t.emit(isa.LD_ADDR, rt.digitAddr)
+	t.emit(isa.CMP, t.zeroAddr)
+	printJumpIndex := len(t.code)
+	t.emit(isa.JNZ, 0)
+
+	t.emit(isa.LD_ADDR, rt.startedAddr)
+	t.emit(isa.CMP, t.zeroAddr)
+	skipPrintJumpIndex := len(t.code)
+	t.emit(isa.JZ, 0)
+
+	printAddr := t.currentAddr()
+	t.patchOperand(printJumpIndex, printAddr)
+	t.emit(isa.LD_ADDR, rt.digitAddr)
+	t.emit(isa.ADD, rt.asciiZeroAddr)
+	t.emit(isa.OUT, isa.Operand(isa.PortOutput))
+	t.emit(isa.LD_IMM, 1)
+	t.emit(isa.ST_ADDR, rt.startedAddr)
+
+	skipPrintAddr := t.currentAddr()
+	t.patchOperand(skipPrintJumpIndex, skipPrintAddr)
+	t.emit(isa.LD_ADDR, rt.valueAddr)
+	t.emit(isa.MOD, rt.divisorAddr)
+	t.emit(isa.ST_ADDR, rt.valueAddr)
+	t.emit(isa.LD_ADDR, rt.divisorAddr)
+	t.emit(isa.DIV, rt.tenAddr)
+	t.emit(isa.ST_ADDR, rt.divisorAddr)
+	t.emit(isa.JMP, isa.Operand(loopAddr))
+
+	doneAddr := t.currentAddr()
+	t.patchOperand(doneJumpIndex, doneAddr)
+	t.emitReturn()
+
+	zeroAddr := t.currentAddr()
+	t.patchOperand(zeroJumpIndex, zeroAddr)
+	t.emit(isa.LD_ADDR, rt.asciiZeroAddr)
+	t.emit(isa.OUT, isa.Operand(isa.PortOutput))
+	t.emitReturn()
+}
+
+func (t *Translator) emitFetch() {
+	tmpAddr := t.currentTmpAddr()
+	t.emitDrop()
+	t.emit(isa.ST_ADDR, tmpAddr)
+	t.emit(isa.LD_IND, tmpAddr)
 	t.emitNoArg(isa.PUSH)
 }
 
 func (t *Translator) emitStore() {
+	tmpAddr := t.currentTmpAddr()
 	t.emitDrop()
-	t.emit(isa.ST_ADDR, t.tmpAddr)
+	t.emit(isa.ST_ADDR, tmpAddr)
 	t.emitDrop()
-	t.emit(isa.ST_IND, t.tmpAddr)
+	t.emit(isa.ST_IND, tmpAddr)
 }
 
 func (t *Translator) emitIf() {

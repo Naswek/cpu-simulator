@@ -84,34 +84,22 @@ func newTranslator() *Translator {
 	interruptScratch := scratch{
 		tmpAddr: isa.Operand(isa.MemSize - 3*isa.WordSize),
 	}
-	printRuntime := printRuntime{
-		valueAddr:          isa.Operand(isa.MemSize - 4*isa.WordSize),
-		divisorAddr:        isa.Operand(isa.MemSize - 5*isa.WordSize),
-		digitAddr:          isa.Operand(isa.MemSize - 6*isa.WordSize),
-		startedAddr:        isa.Operand(isa.MemSize - 7*isa.WordSize),
-		initialDivisorAddr: isa.Operand(isa.MemSize - 8*isa.WordSize),
-		tenAddr:            isa.Operand(isa.MemSize - 9*isa.WordSize),
-		asciiZeroAddr:      isa.Operand(isa.MemSize - 10*isa.WordSize),
-	}
+	printRuntime := newPrintRuntimeBelow(interruptScratch.tmpAddr)
 
 	data := map[isa.Operand]int32{
-		mainScratch.tmpAddr:             0,
-		interruptScratch.tmpAddr:        0,
-		printRuntime.valueAddr:          0,
-		printRuntime.divisorAddr:        0,
-		printRuntime.digitAddr:          0,
-		printRuntime.startedAddr:        0,
-		printRuntime.initialDivisorAddr: 1000000000,
-		printRuntime.tenAddr:            10,
-		printRuntime.asciiZeroAddr:      48,
-		zeroAddr:                        0,
+		mainScratch.tmpAddr:      0,
+		interruptScratch.tmpAddr: 0,
+		zeroAddr:                 0,
+	}
+	for addr, value := range printRuntime.initialData() {
+		data[addr] = value
 	}
 	translator := &Translator{
 		code:             code,
 		mainScratch:      mainScratch,
 		interruptScratch: interruptScratch,
 		printRuntime:     printRuntime,
-		nextDataAddr:     printRuntime.asciiZeroAddr,
+		nextDataAddr:     printRuntime.lowestAddr(),
 		zeroAddr:         zeroAddr,
 		variables:        make(map[string]isa.Operand),
 		data:             data,

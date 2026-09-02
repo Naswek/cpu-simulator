@@ -6,20 +6,6 @@ import (
 	"fmt"
 )
 
-var specialWords = map[string]struct{}{
-	"variable": {},
-	":":        {},
-	";":        {},
-	"if":       {},
-	"then":     {},
-	"else":     {},
-	"begin":    {},
-	"until":    {},
-	"again":    {},
-	"while":    {},
-	"repeat":   {},
-}
-
 type Program struct {
 	Code             []isa.Instruction
 	Data             map[isa.Operand]int32
@@ -151,7 +137,7 @@ func (t *Translator) validateSymbolName(name string) error {
 		return errors.New("name conflicts with builtin word")
 	}
 
-	if _, ok := specialWords[name]; ok {
+	if isSpecialWord(name) {
 		return errors.New("name conflicts with special word")
 	}
 
@@ -177,120 +163,8 @@ func Translate(source string) (Program, error) {
 	for i := 0; i < len(tokens); i++ {
 		t := tokens[i]
 		if t.Kind == TokenWord {
-			switch t.Text {
-			case "variable":
-				if translator.insideWord {
-					return Program{}, errors.New("variable definition inside word is not supported")
-				}
-				if i+1 >= len(tokens) || tokens[i+1].Kind != TokenWord {
-					return Program{}, errors.New("syntax error: variable definitions cannot be without variable name, variable cannot be number")
-				}
-				name := tokens[i+1]
-				if err = translator.validateSymbolName(name.Text); err != nil {
-					return Program{}, fmt.Errorf("cannot define variable %q: %w", name.Text, err)
-				}
-				if err = translator.defineVariable(name.Text); err != nil {
-					return Program{}, fmt.Errorf("cannot define variable %q: %w", name.Text, err)
-				}
-				i++
-				continue
-			case ":":
-				if translator.insideWord {
-					return Program{}, errors.New("nested word definitions are not supported")
-				}
-				if translator.mainStarted {
-					return Program{}, errors.New("word definitions must appear before executable code")
-				}
-				if len(translator.controlStack) != 0 {
-					return Program{}, errors.New("word definition inside control frame is not supported")
-				}
-				if i+1 >= len(tokens) || tokens[i+1].Kind != TokenWord {
-					return Program{}, errors.New("syntax error: word definition cannot be without word name")
-				}
-				name := tokens[i+1]
-				if err = translator.validateSymbolName(name.Text); err != nil {
-					return Program{}, fmt.Errorf("cannot define word %q: %w", name.Text, err)
-				}
-				if err = translator.defineWord(name.Text); err != nil {
-					return Program{}, fmt.Errorf("cannot define word %q: %w", name.Text, err)
-				}
-				translator.insideWord = true
-				translator.insideInterruptHandler = name.Text == "handle_input"
-				i++
-				continue
-			case ";":
-				if !translator.insideWord {
-					return Program{}, errors.New("semicolon without matching word definition")
-				}
-				if len(translator.controlStack) != 0 {
-					return Program{}, errors.New("unclosed control frame inside word definition")
-				}
-				translator.emitReturn()
-				translator.insideWord = false
-				translator.insideInterruptHandler = false
-				continue
-			case "if":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				translator.emitIf()
-				continue
-			case "then":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				err = translator.emitThen()
-				if err != nil {
-					return Program{}, err
-				}
-				continue
-			case "else":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				err = translator.emitElse()
-				if err != nil {
-					return Program{}, err
-				}
-				continue
-			case "begin":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				translator.emitBegin()
-				continue
-			case "until":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				err = translator.emitUntil()
-				if err != nil {
-					return Program{}, err
-				}
-				continue
-			case "again":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				err = translator.emitAgain()
-				if err != nil {
-					return Program{}, err
-				}
-				continue
-			case "while":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				err = translator.emitWhile()
-				if err != nil {
-					return Program{}, err
-				}
-				continue
-			case "repeat":
-				if !translator.insideWord {
-					translator.startMain()
-				}
-				err = translator.emitRepeat()
+			if handler, ok := specialHandlers[t.Text]; ok {
+				i, err = handler(translator, tokens, i)
 				if err != nil {
 					return Program{}, err
 				}

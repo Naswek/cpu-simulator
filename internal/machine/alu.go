@@ -56,6 +56,38 @@ func (c *CPU) updateZN(value int32) {
 	c.setFlag(isa.N, value < 0)
 }
 
+func (c *CPU) updateALUFlags(opcode isa.Opcode, left, right, result int32) {
+	c.updateZN(result)
+
+	switch opcode {
+	case isa.ADD, isa.INC:
+		c.setFlag(isa.C, addCarry(left, right))
+		c.setFlag(isa.V, addOverflow(left, right, result))
+	case isa.SUB, isa.CMP, isa.DEC:
+		c.setFlag(isa.C, subBorrow(left, right))
+		c.setFlag(isa.V, subOverflow(left, right, result))
+	default:
+		c.setFlag(isa.C, false)
+		c.setFlag(isa.V, false)
+	}
+}
+
+func addCarry(left, right int32) bool {
+	return uint32(left)+uint32(right) < uint32(left)
+}
+
+func addOverflow(left, right, result int32) bool {
+	return (left >= 0 && right >= 0 && result < 0) || (left < 0 && right < 0 && result >= 0)
+}
+
+func subBorrow(left, right int32) bool {
+	return uint32(left) < uint32(right)
+}
+
+func subOverflow(left, right, result int32) bool {
+	return (left < 0 && right >= 0 && result >= 0) || (left >= 0 && right < 0 && result < 0)
+}
+
 func (c *CPU) execBinaryOp(opcode isa.Opcode) error {
 	operation, ok := binaryOperations[opcode]
 	if !ok {
@@ -67,13 +99,14 @@ func (c *CPU) execBinaryOp(opcode isa.Opcode) error {
 		return err
 	}
 
-	result, err := operation(c.ACC, right)
+	left := c.ACC
+	result, err := operation(left, right)
 	if err != nil {
 		return err
 	}
 
 	c.ACC = result
-	c.updateZN(result)
+	c.updateALUFlags(opcode, left, right, result)
 	return nil
 }
 
@@ -83,17 +116,28 @@ func (c *CPU) execUnaryOp(opcode isa.Opcode) error {
 		return fmt.Errorf("unknown unary alu opcode: %v", opcode)
 	}
 
-	result, err := operation(c.ACC)
+	left := c.ACC
+	result, err := operation(left)
 	if err != nil {
 		return err
 	}
 
 	c.ACC = result
-	c.updateZN(result)
+	c.updateALUFlags(opcode, left, unaryRightOperand(opcode), result)
 	return nil
 }
 
+func unaryRightOperand(opcode isa.Opcode) int32 {
+	switch opcode {
+	case isa.INC, isa.DEC:
+		return 1
+	default:
+		return 0
+	}
+}
+
 func (c *CPU) execCmp(value int32) {
-	result := c.ACC - value
-	c.updateZN(result)
+	left := c.ACC
+	result := left - value
+	c.updateALUFlags(isa.CMP, left, value, result)
 }

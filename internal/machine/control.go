@@ -17,6 +17,12 @@ var jumpOpcodes = map[isa.Opcode]JumpOperation{
 	isa.JNZ: func(c *CPU, addr isa.Operand) error {
 		return c.jumpIf(!c.flag(isa.Z), addr)
 	},
+	isa.JC: func(c *CPU, addr isa.Operand) error {
+		return c.jumpIf(c.flag(isa.C), addr)
+	},
+	isa.JNC: func(c *CPU, addr isa.Operand) error {
+		return c.jumpIf(!c.flag(isa.C), addr)
+	},
 	isa.JN: func(c *CPU, addr isa.Operand) error {
 		return c.jumpIf(c.flag(isa.N), addr)
 	},

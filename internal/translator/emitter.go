@@ -5,40 +5,13 @@ import (
 	"errors"
 )
 
-type scratch struct {
-	tmpAddr isa.Operand
-}
-
-type Translator struct {
-	code                   []isa.Instruction
-	mainScratch            scratch
-	interruptScratch       scratch
-	printRuntime           printRuntime
-	zeroAddr               isa.Operand
-	variables              map[string]isa.Operand
-	nextDataAddr           isa.Operand
-	controlStack           []ControlFrame
-	data                   map[isa.Operand]int32
-	words                  map[string]isa.Operand
-	interruptVectors       map[uint8]isa.Operand
-	unresolvedCalls        []CallPatch
-	insideWord             bool
-	insideInterruptHandler bool
-	mainStarted            bool
-	entryJumpIndex         int
-}
-
-type CallPatch struct {
-	name  string
-	index int
-}
-
 func (t *Translator) emit(opcode isa.Opcode, operand isa.Operand) {
 	t.code = append(t.code, isa.Instruction{
 		Opcode:  opcode,
 		Operand: operand,
 	})
 }
+
 func (t *Translator) emitNoArg(opcode isa.Opcode) {
 	t.emit(opcode, 0)
 }

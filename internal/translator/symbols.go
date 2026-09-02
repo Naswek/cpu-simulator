@@ -2,8 +2,29 @@ package translator
 
 import (
 	"cpu-simulator/internal/isa"
+	"errors"
 	"fmt"
 )
+
+func (t *Translator) validateSymbolName(name string) error {
+	if _, ok := builtins[name]; ok {
+		return errors.New("name conflicts with builtin word")
+	}
+
+	if isSpecialWord(name) {
+		return errors.New("name conflicts with special word")
+	}
+
+	if _, ok := t.lookupVariable(name); ok {
+		return fmt.Errorf("name %s already defined as variable", name)
+	}
+
+	if _, ok := t.lookupWord(name); ok {
+		return fmt.Errorf("name %s already defined as word", name)
+	}
+
+	return nil
+}
 
 func (t *Translator) defineVariable(name string) error {
 	if _, ok := t.lookupVariable(name); ok {

@@ -53,12 +53,12 @@ func main() {
 	}
 }
 
-func buildInputEvents(data []byte	) []machine.InputEvent {
+func buildInputEvents(data []byte) []machine.InputEvent {
 	events := make([]machine.InputEvent, 0, len(data))
 
 	for i, b := range data {
 		events = append(events, machine.InputEvent{
-			Tick: inputStartTick + uint64(i) * inputTickStep,
+			Tick:  inputStartTick + uint64(i)*inputTickStep,
 			Value: int32(b),
 		})
 	}

@@ -124,8 +124,7 @@ tick=683 pc=0x00000330 acc=10 sr=0x00 ir=0x1B000000 instr="pop" interrupt=false 
 tick=684 pc=0x00000334 acc=10 sr=0x00 ir=0x41000001 instr="out 1 ; output" interrupt=false output="What is your name?\n"
 tick=685 pc=0x00000338 acc=10 sr=0x10 ir=0x03000000 instr="ei" interrupt=false output="What is your name?\n"
 tick=686 pc=0x0000033C acc=1996 sr=0x10 ir=0x200007CC instr="ld_imm #1996" interrupt=false output="What is your name?\n"
-tick=687 pc=0x00000340 acc=1996 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
-... skipped 311 lines ...
+... skipped 312 lines ...
 tick=999 pc=0x00000358 acc=0 sr=0x11 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output="What is your name?\n"
 tick=1000 pc=0x00000338 acc=0 sr=0x11 ir=0x11000338 instr="jz 0x000338" interrupt=false output="What is your name?\n"
 tick=1001 pc=0x000000A0 acc=65 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output="What is your name?\n"
@@ -186,8 +185,7 @@ tick=1055 pc=0x00000204 acc=4 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true o
 tick=1056 pc=0x00000208 acc=4 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output="What is your name?\n"
 tick=1057 pc=0x00000338 acc=0 sr=0x11 ir=0x05000000 instr="iret" interrupt=false output="What is your name?\n"
 tick=1058 pc=0x0000033C acc=1996 sr=0x10 ir=0x200007CC instr="ld_imm #1996" interrupt=false output="What is your name?\n"
-tick=1059 pc=0x00000340 acc=1996 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
-... skipped 39 lines ...
+... skipped 40 lines ...
 tick=1099 pc=0x00000350 acc=0 sr=0x11 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
 tick=1100 pc=0x00000354 acc=0 sr=0x11 ir=0x1B000000 instr="pop" interrupt=false output="What is your name?\n"
 tick=1101 pc=0x000000A0 acc=108 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output="What is your name?\n"
@@ -248,8 +246,7 @@ tick=1155 pc=0x00000204 acc=8 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true o
 tick=1156 pc=0x00000208 acc=8 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output="What is your name?\n"
 tick=1157 pc=0x00000354 acc=0 sr=0x11 ir=0x05000000 instr="iret" interrupt=false output="What is your name?\n"
 tick=1158 pc=0x00000358 acc=0 sr=0x11 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output="What is your name?\n"
-tick=1159 pc=0x00000338 acc=0 sr=0x11 ir=0x11000338 instr="jz 0x000338" interrupt=false output="What is your name?\n"
-... skipped 39 lines ...
+... skipped 40 lines ...
 tick=1199 pc=0x00000348 acc=1996 sr=0x10 ir=0x240007F8 instr="st_addr 0x0007F8" interrupt=false output="What is your name?\n"
 tick=1200 pc=0x0000034C acc=0 sr=0x11 ir=0x220007F8 instr="ld_ind 0x0007F8" interrupt=false output="What is your name?\n"
 tick=1201 pc=0x000000A0 acc=105 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output="What is your name?\n"
@@ -310,8 +307,7 @@ tick=1255 pc=0x00000204 acc=12 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true 
 tick=1256 pc=0x00000208 acc=12 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output="What is your name?\n"
 tick=1257 pc=0x0000034C acc=0 sr=0x11 ir=0x05000000 instr="iret" interrupt=false output="What is your name?\n"
 tick=1258 pc=0x00000350 acc=0 sr=0x11 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
-tick=1259 pc=0x00000354 acc=0 sr=0x11 ir=0x1B000000 instr="pop" interrupt=false output="What is your name?\n"
-... skipped 39 lines ...
+... skipped 40 lines ...
 tick=1299 pc=0x00000340 acc=1996 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
 tick=1300 pc=0x00000344 acc=1996 sr=0x10 ir=0x1B000000 instr="pop" interrupt=false output="What is your name?\n"
 tick=1301 pc=0x000000A0 acc=99 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output="What is your name?\n"
@@ -372,8 +368,7 @@ tick=1355 pc=0x00000204 acc=16 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true 
 tick=1356 pc=0x00000208 acc=16 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output="What is your name?\n"
 tick=1357 pc=0x00000344 acc=1996 sr=0x10 ir=0x05000000 instr="iret" interrupt=false output="What is your name?\n"
 tick=1358 pc=0x00000348 acc=1996 sr=0x10 ir=0x240007F8 instr="st_addr 0x0007F8" interrupt=false output="What is your name?\n"
-tick=1359 pc=0x0000034C acc=0 sr=0x11 ir=0x220007F8 instr="ld_ind 0x0007F8" interrupt=false output="What is your name?\n"
-... skipped 39 lines ...
+... skipped 40 lines ...
 tick=1399 pc=0x00000338 acc=0 sr=0x11 ir=0x11000338 instr="jz 0x000338" interrupt=false output="What is your name?\n"
 tick=1400 pc=0x0000033C acc=1996 sr=0x10 ir=0x200007CC instr="ld_imm #1996" interrupt=false output="What is your name?\n"
 tick=1401 pc=0x000000A0 acc=101 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output="What is your name?\n"
@@ -434,8 +429,7 @@ tick=1455 pc=0x00000204 acc=20 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true 
 tick=1456 pc=0x00000208 acc=20 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output="What is your name?\n"
 tick=1457 pc=0x0000033C acc=1996 sr=0x10 ir=0x05000000 instr="iret" interrupt=false output="What is your name?\n"
 tick=1458 pc=0x00000340 acc=1996 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
-tick=1459 pc=0x00000344 acc=1996 sr=0x10 ir=0x1B000000 instr="pop" interrupt=false output="What is your name?\n"
-... skipped 39 lines ...
+... skipped 40 lines ...
 tick=1499 pc=0x00000354 acc=0 sr=0x11 ir=0x1B000000 instr="pop" interrupt=false output="What is your name?\n"
 tick=1500 pc=0x00000358 acc=0 sr=0x11 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output="What is your name?\n"
 tick=1501 pc=0x000000A0 acc=10 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output="What is your name?\n"
@@ -489,14 +483,7 @@ tick=1548 pc=0x00000168 acc=1 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" inte
 tick=1549 pc=0x00000208 acc=1 sr=0x30 ir=0x10000208 instr="jmp 0x000208" interrupt=true output="What is your name?\n"
 tick=1550 pc=0x00000358 acc=0 sr=0x11 ir=0x05000000 instr="iret" interrupt=false output="What is your name?\n"
 tick=1551 pc=0x00000338 acc=0 sr=0x11 ir=0x11000338 instr="jz 0x000338" interrupt=false output="What is your name?\n"
-tick=1552 pc=0x0000033C acc=1996 sr=0x10 ir=0x200007CC instr="ld_imm #1996" interrupt=false output="What is your name?\n"
-... skipped 6 lines ...
-tick=1559 pc=0x00000358 acc=1 sr=0x10 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output="What is your name?\n"
-tick=1560 pc=0x0000035C acc=1 sr=0x10 ir=0x11000338 instr="jz 0x000338" interrupt=false output="What is your name?\n"
-tick=1561 pc=0x00000360 acc=1 sr=0x00 ir=0x04000000 instr="di" interrupt=false output="What is your name?\n"
-tick=1562 pc=0x00000364 acc=1820 sr=0x00 ir=0x2000071C instr="ld_imm #1820" interrupt=false output="What is your name?\n"
-tick=1563 pc=0x00000368 acc=1820 sr=0x00 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
-... skipped 26 lines ...
+... skipped 38 lines ...
 tick=1590 pc=0x0000028C acc=72 sr=0x00 ir=0x1A000000 instr="push" interrupt=false output="What is your name?\n"
 tick=1591 pc=0x00000290 acc=72 sr=0x00 ir=0x1B000000 instr="pop" interrupt=false output="What is your name?\n"
 tick=1592 pc=0x00000294 acc=72 sr=0x00 ir=0x41000001 instr="out 1 ; output" interrupt=false output="What is your name?\nH"

@@ -10,13 +10,7 @@ tick=9 pc=0x00000424 acc=0 sr=0x01 ir=0x250007F8 instr="st_ind 0x0007F8" interru
 tick=10 pc=0x00000428 acc=0 sr=0x01 ir=0x20000000 instr="ld_imm #0" interrupt=false output=""
 tick=11 pc=0x0000042C acc=0 sr=0x01 ir=0x1A000000 instr="push" interrupt=false output=""
 tick=12 pc=0x00000430 acc=2000 sr=0x00 ir=0x200007D0 instr="ld_imm #2000" interrupt=false output=""
-... skipped 3 lines ...
-tick=16 pc=0x00000440 acc=0 sr=0x01 ir=0x1B000000 instr="pop" interrupt=false output=""
-tick=17 pc=0x00000444 acc=0 sr=0x01 ir=0x250007F8 instr="st_ind 0x0007F8" interrupt=false output=""
-tick=18 pc=0x00000448 acc=0 sr=0x11 ir=0x03000000 instr="ei" interrupt=false output=""
-tick=19 pc=0x0000044C acc=2000 sr=0x10 ir=0x200007D0 instr="ld_imm #2000" interrupt=false output=""
-tick=20 pc=0x00000450 acc=2000 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output=""
-... skipped 978 lines ...
+... skipped 986 lines ...
 tick=999 pc=0x00000448 acc=0 sr=0x11 ir=0x11000448 instr="jz 0x000448" interrupt=false output=""
 tick=1000 pc=0x0000044C acc=2000 sr=0x10 ir=0x200007D0 instr="ld_imm #2000" interrupt=false output=""
 tick=1001 pc=0x000000A0 acc=52 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -69,8 +63,7 @@ tick=1047 pc=0x00000188 acc=4 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true o
 tick=1048 pc=0x0000018C acc=4 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output=""
 tick=1049 pc=0x0000044C acc=2000 sr=0x10 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1050 pc=0x00000450 acc=2000 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output=""
-tick=1051 pc=0x00000454 acc=2000 sr=0x10 ir=0x1B000000 instr="pop" interrupt=false output=""
-... skipped 47 lines ...
+... skipped 48 lines ...
 tick=1099 pc=0x00000460 acc=0 sr=0x11 ir=0x1A000000 instr="push" interrupt=false output=""
 tick=1100 pc=0x00000464 acc=0 sr=0x11 ir=0x1B000000 instr="pop" interrupt=false output=""
 tick=1101 pc=0x000000A0 acc=48 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -123,8 +116,7 @@ tick=1147 pc=0x00000188 acc=40 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true 
 tick=1148 pc=0x0000018C acc=40 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output=""
 tick=1149 pc=0x00000464 acc=0 sr=0x11 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1150 pc=0x00000468 acc=0 sr=0x11 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output=""
-tick=1151 pc=0x00000448 acc=0 sr=0x11 ir=0x11000448 instr="jz 0x000448" interrupt=false output=""
-... skipped 47 lines ...
+... skipped 48 lines ...
 tick=1199 pc=0x00000454 acc=2000 sr=0x10 ir=0x1B000000 instr="pop" interrupt=false output=""
 tick=1200 pc=0x00000458 acc=2000 sr=0x10 ir=0x240007F8 instr="st_addr 0x0007F8" interrupt=false output=""
 tick=1201 pc=0x000000A0 acc=48 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -177,8 +169,7 @@ tick=1247 pc=0x00000188 acc=400 sr=0x30 ir=0x1B000000 instr="pop" interrupt=true
 tick=1248 pc=0x0000018C acc=400 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output=""
 tick=1249 pc=0x00000458 acc=2000 sr=0x10 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1250 pc=0x0000045C acc=0 sr=0x11 ir=0x220007F8 instr="ld_ind 0x0007F8" interrupt=false output=""
-tick=1251 pc=0x00000460 acc=0 sr=0x11 ir=0x1A000000 instr="push" interrupt=false output=""
-... skipped 47 lines ...
+... skipped 48 lines ...
 tick=1299 pc=0x00000448 acc=0 sr=0x11 ir=0x11000448 instr="jz 0x000448" interrupt=false output=""
 tick=1300 pc=0x0000044C acc=2000 sr=0x10 ir=0x200007D0 instr="ld_imm #2000" interrupt=false output=""
 tick=1301 pc=0x000000A0 acc=48 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -231,8 +222,7 @@ tick=1347 pc=0x00000188 acc=4000 sr=0x30 ir=0x1B000000 instr="pop" interrupt=tru
 tick=1348 pc=0x0000018C acc=4000 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output=""
 tick=1349 pc=0x0000044C acc=2000 sr=0x10 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1350 pc=0x00000450 acc=2000 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output=""
-tick=1351 pc=0x00000454 acc=2000 sr=0x10 ir=0x1B000000 instr="pop" interrupt=false output=""
-... skipped 47 lines ...
+... skipped 48 lines ...
 tick=1399 pc=0x00000460 acc=0 sr=0x11 ir=0x1A000000 instr="push" interrupt=false output=""
 tick=1400 pc=0x00000464 acc=0 sr=0x11 ir=0x1B000000 instr="pop" interrupt=false output=""
 tick=1401 pc=0x000000A0 acc=48 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -285,8 +275,7 @@ tick=1447 pc=0x00000188 acc=40000 sr=0x30 ir=0x1B000000 instr="pop" interrupt=tr
 tick=1448 pc=0x0000018C acc=40000 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output=""
 tick=1449 pc=0x00000464 acc=0 sr=0x11 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1450 pc=0x00000468 acc=0 sr=0x11 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output=""
-tick=1451 pc=0x00000448 acc=0 sr=0x11 ir=0x11000448 instr="jz 0x000448" interrupt=false output=""
-... skipped 47 lines ...
+... skipped 48 lines ...
 tick=1499 pc=0x00000454 acc=2000 sr=0x10 ir=0x1B000000 instr="pop" interrupt=false output=""
 tick=1500 pc=0x00000458 acc=2000 sr=0x10 ir=0x240007F8 instr="st_addr 0x0007F8" interrupt=false output=""
 tick=1501 pc=0x000000A0 acc=48 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -339,8 +328,7 @@ tick=1547 pc=0x00000188 acc=400000 sr=0x30 ir=0x1B000000 instr="pop" interrupt=t
 tick=1548 pc=0x0000018C acc=400000 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output=""
 tick=1549 pc=0x00000458 acc=2000 sr=0x10 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1550 pc=0x0000045C acc=0 sr=0x11 ir=0x220007F8 instr="ld_ind 0x0007F8" interrupt=false output=""
-tick=1551 pc=0x00000460 acc=0 sr=0x11 ir=0x1A000000 instr="push" interrupt=false output=""
-... skipped 47 lines ...
+... skipped 48 lines ...
 tick=1599 pc=0x00000448 acc=0 sr=0x11 ir=0x11000448 instr="jz 0x000448" interrupt=false output=""
 tick=1600 pc=0x0000044C acc=2000 sr=0x10 ir=0x200007D0 instr="ld_imm #2000" interrupt=false output=""
 tick=1601 pc=0x000000A0 acc=48 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -393,8 +381,7 @@ tick=1647 pc=0x00000188 acc=4000000 sr=0x30 ir=0x1B000000 instr="pop" interrupt=
 tick=1648 pc=0x0000018C acc=4000000 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" interrupt=true output=""
 tick=1649 pc=0x0000044C acc=2000 sr=0x10 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1650 pc=0x00000450 acc=2000 sr=0x10 ir=0x1A000000 instr="push" interrupt=false output=""
-tick=1651 pc=0x00000454 acc=2000 sr=0x10 ir=0x1B000000 instr="pop" interrupt=false output=""
-... skipped 47 lines ...
+... skipped 48 lines ...
 tick=1699 pc=0x00000460 acc=0 sr=0x11 ir=0x1A000000 instr="push" interrupt=false output=""
 tick=1700 pc=0x00000464 acc=0 sr=0x11 ir=0x1B000000 instr="pop" interrupt=false output=""
 tick=1701 pc=0x000000A0 acc=10 sr=0x30 ir=0x40000000 instr="in 0 ; input" interrupt=true output=""
@@ -425,14 +412,7 @@ tick=1725 pc=0x0000010C acc=1 sr=0x30 ir=0x250007F4 instr="st_ind 0x0007F4" inte
 tick=1726 pc=0x0000018C acc=1 sr=0x30 ir=0x1000018C instr="jmp 0x00018C" interrupt=true output=""
 tick=1727 pc=0x00000464 acc=0 sr=0x11 ir=0x05000000 instr="iret" interrupt=false output=""
 tick=1728 pc=0x00000468 acc=0 sr=0x11 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output=""
-tick=1729 pc=0x00000448 acc=0 sr=0x11 ir=0x11000448 instr="jz 0x000448" interrupt=false output=""
-... skipped 7 lines ...
-tick=1737 pc=0x00000468 acc=1 sr=0x10 ir=0x370007FC instr="cmp 0x0007FC" interrupt=false output=""
-tick=1738 pc=0x0000046C acc=1 sr=0x10 ir=0x11000448 instr="jz 0x000448" interrupt=false output=""
-tick=1739 pc=0x00000470 acc=1 sr=0x00 ir=0x04000000 instr="di" interrupt=false output=""
-tick=1740 pc=0x00000194 acc=1 sr=0x00 ir=0x17000194 instr="call 0x000194" interrupt=false output=""
-tick=1741 pc=0x00000198 acc=0 sr=0x01 ir=0x20000000 instr="ld_imm #0" interrupt=false output=""
-... skipped 3345 lines ...
+... skipped 3358 lines ...
 tick=5087 pc=0x00000060 acc=4 sr=0x00 ir=0x210007E8 instr="ld_addr 0x0007E8" interrupt=false output=""
 tick=5088 pc=0x00000064 acc=52 sr=0x00 ir=0x300007D8 instr="add 0x0007D8" interrupt=false output=""
 tick=5089 pc=0x00000068 acc=52 sr=0x00 ir=0x41000001 instr="out 1 ; output" interrupt=false output="4"

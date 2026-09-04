@@ -12,8 +12,7 @@ type InputEvent struct {
 }
 
 type IOController struct {
-	inputValue int32
-	inputReady bool
+	inputQueue []int32
 
 	irqPending bool
 	irqVector  uint8
@@ -43,6 +42,7 @@ func newIOControllerWithEvents(inputEvents []InputEvent) *IOController {
 	return &IOController{
 		irqVector:   isa.PortsTable[isa.PortInput].InterruptVector,
 		inputEvents: events,
+		inputQueue:  make([]int32, 0),
 		output:      make([]byte, 0),
 	}
 }
@@ -58,15 +58,11 @@ func (io *IOController) Advance(tick int) error {
 			return nil
 		}
 
-		if io.inputReady {
-			return fmt.Errorf("input overrun at tick %d", tick)
-		}
 		if event.Value < 0 || event.Value > 255 {
 			return fmt.Errorf("input value out of byte range at tick %d: %d", tick, event.Value)
 		}
 
-		io.inputValue = event.Value
-		io.inputReady = true
+		io.inputQueue = append(io.inputQueue, event.Value)
 		io.irqPending = true
 		io.irqVector = isa.PortsTable[isa.PortInput].InterruptVector
 		io.nextEvent++
@@ -88,21 +84,18 @@ func (io *IOController) ClearIRQ() {
 }
 
 func (io *IOController) InputReady() bool {
-	return io.inputReady
+	return len(io.inputQueue) > 0
 }
 
 func (c *CPU) execOut() error {
-	return c.io.WritePort(uint8(c.IR.Operand), c.ACC)
+	c.appendStages((*CPU).stageWritePort)
+	return nil
 }
 
 func (c *CPU) execIn() error {
-	value, err := c.io.ReadPort(uint8(c.IR.Operand))
-	if err != nil {
-		return err
-	}
-
-	c.ACC = value
-	c.updateZN(c.ACC)
+	c.appendStages(
+		(*CPU).stageReadPort,
+	)
 	return nil
 }
 
@@ -111,14 +104,13 @@ func (io *IOController) ReadPort(port uint8) (int32, error) {
 		return 0, fmt.Errorf("unknown input port: %v", port)
 	}
 
-	if !io.inputReady {
+	if len(io.inputQueue) == 0 {
 		return 0, fmt.Errorf("input port is not ready")
 	}
 
-	value := io.inputValue
-	io.inputValue = 0
-	io.inputReady = false
-	io.irqPending = false
+	value := io.inputQueue[0]
+	io.inputQueue = io.inputQueue[1:]
+	io.irqPending = len(io.inputQueue) > 0
 	return value, nil
 }
 
@@ -132,6 +124,27 @@ func (io *IOController) WritePort(port uint8, value int32) error {
 	}
 
 	io.output = append(io.output, byte(value))
+	return nil
+}
+
+func (c *CPU) stageReadPort() error {
+	value, err := c.io.ReadPort(uint8(c.IR.Operand))
+	if err != nil {
+		return err
+	}
+
+	c.ACC = value
+	c.SR = statusWithZN(c.SR, c.ACC)
+	c.tick()
+	return nil
+}
+
+func (c *CPU) stageWritePort() error {
+	if err := c.io.WritePort(uint8(c.IR.Operand), c.ACC); err != nil {
+		return err
+	}
+
+	c.tick()
 	return nil
 }
 

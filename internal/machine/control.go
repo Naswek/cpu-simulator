@@ -68,35 +68,36 @@ func (c *CPU) execJump(opcode isa.Opcode) error {
 		return fmt.Errorf("unknown jump opcode: %v", opcode)
 	}
 
-	if err := jumpOperation(c, c.IR.Operand); err != nil {
-		return err
-	}
-	c.tick()
-	c.finishInstruction()
+	c.appendStages(func(c *CPU) error {
+		if err := jumpOperation(c, c.IR.Operand); err != nil {
+			return err
+		}
+
+		c.tick()
+		return nil
+	})
 	return nil
 }
 
 func (c *CPU) execCall() error {
-	if err := c.pushReturn(c.PC); err != nil {
-		return err
-	}
-	if err := c.jump(c.IR.Operand); err != nil {
-		return err
-	}
-	c.tick()
-	c.finishInstruction()
+	c.appendStages(
+		(*CPU).stageWriteReturnStack,
+		(*CPU).stageIncrementRSP,
+		c.stageSetPC(func(c *CPU) uint32 {
+			return uint32(c.IR.Operand)
+		}),
+	)
 	return nil
 }
 
 func (c *CPU) execRet() error {
-	addr, err := c.popReturn()
-	if err != nil {
-		return err
-	}
-	if err := c.jump(isa.Operand(addr)); err != nil {
-		return err
-	}
-	c.tick()
-	c.finishInstruction()
+	c.appendStages(
+		(*CPU).stageReadReturnStack,
+		(*CPU).stageSetDRFromPendingAddr,
+		c.stageSetPC(func(c *CPU) uint32 {
+			return c.DR
+		}),
+		(*CPU).stagePopReturnStack,
+	)
 	return nil
 }

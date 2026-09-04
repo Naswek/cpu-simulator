@@ -18,49 +18,89 @@ type InterruptFrame struct {
 }
 
 func (c *CPU) execEI() error {
-	c.setFlag(isa.IE, true)
+	c.appendStages(c.stageSetSR(func(c *CPU) uint8 {
+		return statusWithFlag(c.SR, isa.IE, true)
+	}))
 	return nil
 }
 
 func (c *CPU) execDI() error {
-	c.setFlag(isa.IE, false)
+	c.appendStages(c.stageSetSR(func(c *CPU) uint8 {
+		return statusWithFlag(c.SR, isa.IE, false)
+	}))
 	return nil
 }
 
 func (c *CPU) execIRET() error {
+	c.appendStages(
+		(*CPU).stageReadInterruptFrame,
+		c.stageSetACC(func(c *CPU) int32 {
+			return c.pendingFrame.ACC
+		}),
+		c.stageSetPC(func(c *CPU) uint32 {
+			return c.pendingFrame.PC
+		}),
+		c.stageSetSR(func(c *CPU) uint8 {
+			return statusWithFlag(c.pendingFrame.SR, isa.IM, false)
+		}),
+	)
+	return nil
+}
+
+func (c *CPU) hasPendingInterrupt() bool {
+	return c.flag(isa.IE) && !c.flag(isa.IM) && c.io.IRQPending()
+}
+
+func (c *CPU) startInterrupt() {
+	vector := c.io.IRQVector()
+	c.stages = []stageOperation{
+		c.stageSetAR(func(c *CPU) uint32 {
+			return uint32(isa.InterruptVectorAddress(vector))
+		}),
+		(*CPU).stageReadMemory,
+		(*CPU).stagePushInterruptFrame,
+		c.stageSetSR(func(c *CPU) uint8 {
+			return statusWithFlag(c.SR, isa.IM, true)
+		}),
+		c.stageSetPC(func(c *CPU) uint32 {
+			return c.DR
+		}),
+		(*CPU).stageClearIRQ,
+	}
+	c.step = 0
+}
+
+func (c *CPU) stagePushInterruptFrame() error {
+	if c.DR == 0 {
+		return fmt.Errorf("interrupt vector %d is not initialized", c.io.IRQVector())
+	}
+
+	frame := InterruptFrame{
+		PC:  c.PC,
+		ACC: c.ACC,
+		SR:  c.SR,
+	}
+	if err := c.pushFrame(frame); err != nil {
+		return err
+	}
+
+	c.tick()
+	return nil
+}
+
+func (c *CPU) stageReadInterruptFrame() error {
 	frame, err := c.popFrame()
 	if err != nil {
 		return err
 	}
-	c.setFlag(isa.IM, false)
-	c.ACC = frame.ACC
-	c.PC = frame.PC
-	c.SR = frame.SR
+
+	c.pendingFrame = frame
+	c.tick()
 	return nil
 }
 
-func (c *CPU) interruptHandler() error {
-	if c.flag(isa.IE) && !c.flag(isa.IM) && c.io.IRQPending() {
-		addr, err := c.readWord(uint32(isa.InterruptVectorAddress(c.io.IRQVector())))
-		if err != nil {
-			return err
-		}
-		if addr == 0 {
-			return fmt.Errorf("interrupt vector %d is not initialized", c.io.IRQVector())
-		}
-
-		frame := InterruptFrame{
-			PC:  c.PC,
-			ACC: c.ACC,
-			SR:  c.SR,
-		}
-		if err := c.pushFrame(frame); err != nil {
-			return err
-		}
-
-		c.setFlag(isa.IM, true)
-		c.io.ClearIRQ()
-		return c.jump(isa.Operand(addr))
-	}
+func (c *CPU) stageClearIRQ() error {
+	c.io.ClearIRQ()
+	c.tick()
 	return nil
 }

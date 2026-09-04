@@ -107,6 +107,8 @@ func (c *CPU) execBinaryOp(opcode isa.Opcode) error {
 
 	c.ACC = result
 	c.updateALUFlags(opcode, left, right, result)
+	c.tick()
+	c.finishInstruction()
 	return nil
 }
 
@@ -124,6 +126,8 @@ func (c *CPU) execUnaryOp(opcode isa.Opcode) error {
 
 	c.ACC = result
 	c.updateALUFlags(opcode, left, unaryRightOperand(opcode), result)
+	c.tick()
+	c.finishInstruction()
 	return nil
 }
 
@@ -140,4 +144,16 @@ func (c *CPU) execCmp(value int32) {
 	left := c.ACC
 	result := left - value
 	c.updateALUFlags(isa.CMP, left, value, result)
+}
+
+func (c *CPU) execCmpInstruction() error {
+	value, err := c.readOperand()
+	if err != nil {
+		return err
+	}
+
+	c.execCmp(value)
+	c.tick()
+	c.finishInstruction()
+	return nil
 }

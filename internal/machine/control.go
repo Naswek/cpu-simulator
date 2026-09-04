@@ -68,14 +68,24 @@ func (c *CPU) execJump(opcode isa.Opcode) error {
 		return fmt.Errorf("unknown jump opcode: %v", opcode)
 	}
 
-	return jumpOperation(c, c.IR.Operand)
+	if err := jumpOperation(c, c.IR.Operand); err != nil {
+		return err
+	}
+	c.tick()
+	c.finishInstruction()
+	return nil
 }
 
 func (c *CPU) execCall() error {
 	if err := c.pushReturn(c.PC); err != nil {
 		return err
 	}
-	return c.jump(c.IR.Operand)
+	if err := c.jump(c.IR.Operand); err != nil {
+		return err
+	}
+	c.tick()
+	c.finishInstruction()
+	return nil
 }
 
 func (c *CPU) execRet() error {
@@ -83,5 +93,10 @@ func (c *CPU) execRet() error {
 	if err != nil {
 		return err
 	}
-	return c.jump(isa.Operand(addr))
+	if err := c.jump(isa.Operand(addr)); err != nil {
+		return err
+	}
+	c.tick()
+	c.finishInstruction()
+	return nil
 }

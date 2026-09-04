@@ -52,23 +52,25 @@ var unaryOperations = map[isa.Opcode]UnaryOperation{
 }
 
 func (c *CPU) updateZN(value int32) {
-	c.setFlag(isa.Z, value == 0)
-	c.setFlag(isa.N, value < 0)
+	c.SR = statusWithZN(c.SR, value)
 }
 
 func (c *CPU) updateALUFlags(opcode isa.Opcode, left, right, result int32) {
-	c.updateZN(result)
+	c.SR = statusWithALUFlags(c.SR, opcode, left, right, result)
+}
 
+func statusWithALUFlags(status uint8, opcode isa.Opcode, left, right, result int32) uint8 {
+	status = statusWithZN(status, result)
 	switch opcode {
 	case isa.ADD, isa.INC:
-		c.setFlag(isa.C, addCarry(left, right))
-		c.setFlag(isa.V, addOverflow(left, right, result))
+		status = statusWithFlag(status, isa.C, addCarry(left, right))
+		return statusWithFlag(status, isa.V, addOverflow(left, right, result))
 	case isa.SUB, isa.CMP, isa.DEC:
-		c.setFlag(isa.C, subBorrow(left, right))
-		c.setFlag(isa.V, subOverflow(left, right, result))
+		status = statusWithFlag(status, isa.C, subBorrow(left, right))
+		return statusWithFlag(status, isa.V, subOverflow(left, right, result))
 	default:
-		c.setFlag(isa.C, false)
-		c.setFlag(isa.V, false)
+		status = statusWithFlag(status, isa.C, false)
+		return statusWithFlag(status, isa.V, false)
 	}
 }
 
@@ -89,45 +91,23 @@ func subOverflow(left, right, result int32) bool {
 }
 
 func (c *CPU) execBinaryOp(opcode isa.Opcode) error {
-	operation, ok := binaryOperations[opcode]
-	if !ok {
+	if _, ok := binaryOperations[opcode]; !ok {
 		return fmt.Errorf("unknown alu opcode: %v", opcode)
 	}
 
-	right, err := c.readOperand()
-	if err != nil {
-		return err
-	}
-
-	left := c.ACC
-	result, err := operation(left, right)
-	if err != nil {
-		return err
-	}
-
-	c.ACC = result
-	c.updateALUFlags(opcode, left, right, result)
-	c.tick()
-	c.finishInstruction()
+	c.appendStages(c.directReadStages()...)
+	c.appendStages(c.stageSetACCFromBinaryOp(opcode))
 	return nil
 }
 
 func (c *CPU) execUnaryOp(opcode isa.Opcode) error {
-	operation, ok := unaryOperations[opcode]
-	if !ok {
+	if _, ok := unaryOperations[opcode]; !ok {
 		return fmt.Errorf("unknown unary alu opcode: %v", opcode)
 	}
 
-	left := c.ACC
-	result, err := operation(left)
-	if err != nil {
-		return err
-	}
-
-	c.ACC = result
-	c.updateALUFlags(opcode, left, unaryRightOperand(opcode), result)
-	c.tick()
-	c.finishInstruction()
+	c.appendStages(
+		c.stageSetACCFromUnaryOp(opcode),
+	)
 	return nil
 }
 
@@ -147,13 +127,44 @@ func (c *CPU) execCmp(value int32) {
 }
 
 func (c *CPU) execCmpInstruction() error {
-	value, err := c.readOperand()
-	if err != nil {
-		return err
-	}
-
-	c.execCmp(value)
-	c.tick()
-	c.finishInstruction()
+	c.appendStages(c.directReadStages()...)
+	c.appendStages(c.stageSetSR(func(c *CPU) uint8 {
+		left := c.ACC
+		right := int32(c.DR)
+		return statusWithALUFlags(c.SR, isa.CMP, left, right, left-right)
+	}))
 	return nil
+}
+
+func (c *CPU) stageSetACCFromBinaryOp(opcode isa.Opcode) stageOperation {
+	return func(c *CPU) error {
+		operation := binaryOperations[opcode]
+		left := c.ACC
+		right := int32(c.DR)
+		result, err := operation(left, right)
+		if err != nil {
+			return err
+		}
+
+		c.ACC = result
+		c.SR = statusWithALUFlags(c.SR, opcode, left, right, result)
+		c.tick()
+		return nil
+	}
+}
+
+func (c *CPU) stageSetACCFromUnaryOp(opcode isa.Opcode) stageOperation {
+	return func(c *CPU) error {
+		operation := unaryOperations[opcode]
+		left := c.ACC
+		result, err := operation(left)
+		if err != nil {
+			return err
+		}
+
+		c.ACC = result
+		c.SR = statusWithALUFlags(c.SR, opcode, left, unaryRightOperand(opcode), result)
+		c.tick()
+		return nil
+	}
 }
